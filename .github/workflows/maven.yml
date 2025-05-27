@@ -41,7 +41,7 @@ jobs:
           echo "Workflow ID: $workflow_id" # Debug print
           docker run \
             -v ${{ github.workspace }}:/workspace \
-            znsio/specmatic-insights-github-build-reporter:latest \
+            specmatic/specmatic-insights-github-build-reporter:latest \
               --specmatic-insights-host https://insights.specmatic.in \
               --specmatic-reports-dir /workspace/build/reports/specmatic \
               --org-id ${{ secrets.SPECMATIC_ORG_ID }} \
