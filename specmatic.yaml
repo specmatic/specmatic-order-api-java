@@ -1,6 +1,7 @@
 version: 2
 contracts:
   - git:
+      branch: main
       url: https://github.com/specmatic/specmatic-order-contracts.git
     provides:
       - io/specmatic/examples/store/openapi/api_order_v4.yaml
