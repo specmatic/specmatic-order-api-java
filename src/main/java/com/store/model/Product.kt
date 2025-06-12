@@ -11,7 +11,7 @@ data class Product(
     val id: Int = idGenerator.getAndIncrement()
 ) {
     companion object {
-        val idGenerator: AtomicInteger = AtomicInteger()
+        val idGenerator: AtomicInteger = AtomicInteger(0)
     }
 }
 
