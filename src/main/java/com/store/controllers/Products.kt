@@ -26,7 +26,7 @@ open class Products {
     @PostMapping("/products/{id}")
     @Validated
     fun update(
-        @PathVariable id: Int,
+        @PathVariable("id") id: Int,
         @Valid @RequestBody product: Product,
         @AuthenticationPrincipal user: User
     ): ResponseEntity<String> {
