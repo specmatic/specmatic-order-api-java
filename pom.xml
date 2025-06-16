@@ -6,7 +6,7 @@
 
     <groupId>com.store</groupId>
     <artifactId>specmatic-order-api</artifactId>
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <kotlin.version>1.9.24</kotlin.version>
