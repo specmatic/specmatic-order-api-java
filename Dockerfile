@@ -9,6 +9,6 @@ WORKDIR /app
 
 EXPOSE 8090
 
-COPY target/specmatic-order-api-1.0.jar /app/order-bff.jar
+COPY target/specmatic-order-api-1.0.jar /app/order-api.jar
 
-CMD java -jar order-bff.jar
+CMD java -jar order-api.jar
