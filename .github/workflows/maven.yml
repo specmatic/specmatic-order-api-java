@@ -27,18 +27,12 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
 
-      - name: Restore Maven cache
-        uses: skjolber/maven-cache-github-action@v3.1.1
-        with:
-          step: restore
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1
 
       - name: Build with Maven
         run: ./mvnw test package jacoco:report -Ptest
-
-      - name: Save Maven cache
-        uses: skjolber/maven-cache-github-action@v3.1.1
-        with:
-          step: save
 
       - name: Run Specmatic Insights Github Build Reporter
         run: |
