@@ -34,18 +34,20 @@ jobs:
       - name: Build with Maven
         run: ./mvnw test package jacoco:report -Ptest
 
-      - name: Run Specmatic Insights Github Build Reporter
+      - name: Save Specmatic license
+        run: |
+          mkdir -p ~/.specmatic
+          echo "${{ secrets.SPECMATIC_LICENSE_KEY }}" > ~/.specmatic/specmatic-license.txt
+
+      - name: Run Specmatic Insights Build Reporter
         run: |
           docker run \
+            -e JAVA_TOOL_OPTIONS="-Dspecmatic.license.v3.disabled=true" \
             -v ${{ github.workspace }}:/workspace \
-            specmatic/specmatic-insights-github-build-reporter:latest \
-              --specmatic-insights-host https://insights.specmatic.in \
-              --specmatic-reports-dir /workspace/build/reports/specmatic \
-              --org-id ${{ secrets.SPECMATIC_ORG_ID }} \
-              --branch-name ${{ github.ref_name }} \
-              --repo-name ${{ github.event.repository.name }} \
-              --repo-id ${{ github.repository_id }} \
-              --repo-url ${{ github.event.repository.html_url }}
+            -v ~/.specmatic/specmatic-license.txt:/root/.specmatic/specmatic-license.txt \
+            -w /workspace \
+            specmatic/specmatic:latest \
+            send-report --insights-server-url=https://insights.specmatic.io
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

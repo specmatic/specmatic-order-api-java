@@ -11,9 +11,17 @@
     <properties>
         <kotlin.version>1.9.24</kotlin.version>
         <maven.compiler>17</maven.compiler>
-        <specmatic.version>2.22.0</specmatic.version>
+        <specmatic.version>2.23.1</specmatic.version>
         <spring.boot.version>3.4.0</spring.boot.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>specmatic-releases</id>
+            <name>Specmatic Repository</name>
+            <url>https://repo.specmatic.io/releases</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
