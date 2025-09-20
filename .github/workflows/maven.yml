@@ -42,12 +42,11 @@ jobs:
       - name: Run Specmatic Insights Build Reporter
         run: |
           docker run \
-            -e JAVA_TOOL_OPTIONS="-Dspecmatic.license.v3.disabled=true" \
             -v ${{ github.workspace }}:/workspace \
-            -v ~/.specmatic/specmatic-license.txt:/root/.specmatic/specmatic-license.txt \
+            -v ~/.specmatic:/root/.specmatic \
             -w /workspace \
             specmatic/specmatic:latest \
-            send-report --insights-server-url=https://insights.specmatic.io
+            send-report
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
