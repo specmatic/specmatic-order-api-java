@@ -46,7 +46,12 @@ jobs:
             -v ~/.specmatic:/root/.specmatic \
             -w /workspace \
             specmatic/specmatic-reporter \
-            send-report --verbose
+            --verbose \
+            --branch-name ${{ github.ref_name }} \
+            --repo-name ${{ github.event.repository.name }} \
+            --repo-id ${{ github.repository_id }} \
+            --repo-url ${{ github.event.repository.html_url }}
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
