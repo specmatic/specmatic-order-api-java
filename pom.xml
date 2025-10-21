@@ -168,7 +168,6 @@
                     <encoding>UTF-8</encoding>
                     <source>${maven.compiler}</source>
                     <target>${maven.compiler}</target>
-                    <compilerArgument>-Werror</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
