@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.util.UUID
 
 private val typesOfProducts = listOf("gadget", "book", "food", "other")
 
@@ -30,11 +31,7 @@ open class Products {
         @Valid @RequestBody product: Product,
         @AuthenticationPrincipal user: User
     ): ResponseEntity<String> {
-        val productId = productService.addProduct(product.also {
-            if(product.type !in typesOfProducts)
-                throw ValidationException("type must be one of ${typesOfProducts.joinToString(", ")}")
-        })
-        productService.updateProduct(product)
+        productService.updateProduct(id, product)
         return ResponseEntity(HttpStatus.OK)
     }
 
@@ -48,12 +45,15 @@ open class Products {
     }
 
     @PostMapping("/products")
-    fun create(@Valid @RequestBody newProduct: Product, @AuthenticationPrincipal user: User): ResponseEntity<Id> {
+    fun create(
+        @Valid @RequestBody newProduct: Product,
+        @RequestHeader("Idempotency-Key") idempotencyKey: UUID,
+        @AuthenticationPrincipal user: User
+    ): ResponseEntity<Id> {
         val productId = productService.addProduct(newProduct.also {
-            if(newProduct.type !in typesOfProducts)
-                throw ValidationException("type must be one of ${typesOfProducts.joinToString(", ")}")
-        })
-        return ResponseEntity(productId, HttpStatus.OK)
+            if (newProduct.type !in typesOfProducts) throw ValidationException("type must be one of ${typesOfProducts.joinToString(", ")}")
+        }, idempotencyKey)
+        return ResponseEntity(productId, HttpStatus.CREATED)
     }
 
     @DeleteMapping("/products/{id}")

@@ -5,27 +5,30 @@ import com.store.filestorage.LocalFileSystem
 import com.store.model.DB
 import com.store.model.Id
 import com.store.model.Product
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class ProductService {
+    @Autowired
+    lateinit var hashService: HashService
 
     fun getProduct(id: Int): Product {
         return DB.findProduct(id)
     }
 
-    fun updateProduct(product:Product){
-        if(product.id == 0)
-            throw ValidationException("Product id cannot be null")
-        DB.updateProduct(product)
+    fun updateProduct(id: Int, product:Product){
+        if (id == 0) throw ValidationException("Product id cannot be null")
+        DB.updateProduct(id, product)
     }
 
-    fun addProduct(product: Product): Id {
-        DB.addProduct(product)
-        return Id(product.id)
+    fun addProduct(product: Product, idempotencyKey: UUID): Id {
+        val idempotencyHash = hashService.hashData(product, idempotencyKey)
+        return DB.addProduct(product, idempotencyHash)
     }
 
-    fun deleteProduct(id:Int) {
+    fun deleteProduct(id: Int) {
         DB.deleteProduct(id)
     }
 

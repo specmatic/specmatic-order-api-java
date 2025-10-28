@@ -1,10 +1,10 @@
 version: 2
 contracts:
   - git:
-      branch: main
+      matchBranch: true
       url: https://github.com/specmatic/specmatic-order-contracts.git
     provides:
-      - io/specmatic/examples/store/openapi/api_order_v4.yaml
+      - io/specmatic/examples/store/openapi/api_order_v5.yaml
 report:
   types:
     APICoverage:

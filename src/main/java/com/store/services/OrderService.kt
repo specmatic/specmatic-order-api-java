@@ -5,14 +5,18 @@ import com.store.model.DB
 import com.store.model.Id
 import com.store.model.Order
 import com.store.model.OrderStatus
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class OrderService {
-    fun createOrder(order: Order): Id {
-        DB.reserveProductInventory(order.productid, order.count)
-        DB.addOrder(order)
-        return Id(order.id)
+    @Autowired
+    lateinit var hashService: HashService
+
+    fun createOrder(order: Order, idempotencyKey: UUID): Id {
+        val idempotencyHash = hashService.hashData(order, idempotencyKey)
+        return DB.addOrder(order, idempotencyHash)
     }
 
     fun getOrder(id: Int): Order {
@@ -23,13 +27,17 @@ class OrderService {
         DB.deleteOrder(id)
     }
 
-    fun updateOrder(order: Order) {
-        if (order.id == 0)
-            throw ValidationException("Product id cannot be null")
-        DB.updateOrder(order)
+    fun updateOrder(id: Int, order: Order) {
+        if (id == 0) throw ValidationException("Product id cannot be null")
+        DB.updateOrder(id, order)
     }
 
     fun findOrders(status: OrderStatus?, productid: Int?): List<Order> {
         return DB.findOrders(status, productid)
+    }
+
+    fun createBulkOrders(orders: List<Order>, idempotencyKey: UUID): List<Id> {
+        val idempotencyHash = hashService.hashData(orders, idempotencyKey)
+        return DB.createBulkOrders(orders, idempotencyHash)
     }
 }

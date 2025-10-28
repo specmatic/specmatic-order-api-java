@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.util.NoSuchElementException
+import java.util.UUID
 
 @RestController
 class Orders {
@@ -17,17 +18,22 @@ class Orders {
     lateinit var orderService: OrderService
 
     @PostMapping("/orders")
-    fun create(@Valid @RequestBody order: Order, @AuthenticationPrincipal user: User): ResponseEntity<Id> {
+    fun create(
+        @Valid @RequestBody order: Order,
+        @RequestHeader("Idempotency-Key") idempotencyKey: UUID,
+        @AuthenticationPrincipal user: User,
+    ): ResponseEntity<Id> {
         println(order.status.toString())
-        val orderId = orderService.createOrder(order)
-        return ResponseEntity(orderId, HttpStatus.OK)
+        val orderId = orderService.createOrder(order, idempotencyKey)
+        return ResponseEntity(orderId, HttpStatus.CREATED)
     }
 
     @PostMapping("/orders/bulk")
     fun createBulk(
-       @Valid @RequestBody orders: List<Order>
+       @Valid @RequestBody orders: List<Order>,
+       @RequestHeader("Idempotency-Key") idempotencyKey: UUID,
     ): ResponseEntity<List<Id>> {
-        val orderIds = orders.map { orderService.createOrder(it) }
+        val orderIds = orderService.createBulkOrders(orders, idempotencyKey)
         return ResponseEntity(orderIds, HttpStatus.OK)
     }
 
@@ -53,7 +59,7 @@ class Orders {
         @AuthenticationPrincipal user: User
     ): ResponseEntity<String> {
         println(order.status.toString())
-        orderService.updateOrder(order)
+        orderService.updateOrder(id, order)
         return ResponseEntity(HttpStatus.OK)
     }
 
