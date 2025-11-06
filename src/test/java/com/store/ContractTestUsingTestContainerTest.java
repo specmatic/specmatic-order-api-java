@@ -17,7 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @EnabledIf(value = "isNonCIOrLinux", disabledReason = "Run only on Linux in CI; all platforms allowed locally")
 public class ContractTestUsingTestContainerTest {
 
-    private static final String APPLICATION_HOST = "localhost";
+    private static final String APPLICATION_HOST = "host.docker.internal";
     private static final int APPLICATION_PORT = 8090;
     private static final String EXCLUDED_ENDPOINTS = "'/internal/metrics'";
 
@@ -32,7 +32,7 @@ public class ContractTestUsingTestContainerTest {
             .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
             .withFileSystemBind("./build/reports/specmatic", "/usr/src/app/build/reports/specmatic", BindMode.READ_WRITE)
             .waitingFor(Wait.forLogMessage(".*Tests run:.*", 1))
-            .withNetworkMode("host")
+            .withExtraHost("host.docker.internal", "host-gateway")
             .withLogConsumer((OutputFrame output) -> System.out.print(output.getUtf8String()));
 
     @BeforeAll
