@@ -28,15 +28,6 @@ class Orders {
         return ResponseEntity(orderId, HttpStatus.CREATED)
     }
 
-    @PostMapping("/orders/bulk")
-    fun createBulk(
-       @Valid @RequestBody orders: List<Order>,
-       @RequestHeader("Idempotency-Key") idempotencyKey: UUID,
-    ): ResponseEntity<List<Id>> {
-        val orderIds = orderService.createBulkOrders(orders, idempotencyKey)
-        return ResponseEntity(orderIds, HttpStatus.OK)
-    }
-
     @GetMapping("/orders/{id}")
     fun get(@PathVariable("id") id: Int): Order {
         try {

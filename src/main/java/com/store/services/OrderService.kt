@@ -15,8 +15,8 @@ class OrderService {
     lateinit var hashService: HashService
 
     fun createOrder(order: Order, idempotencyKey: UUID): Id {
-        val idempotencyHash = hashService.hashData(order, idempotencyKey)
-        return DB.addOrder(order, idempotencyHash)
+        val bodyHash = hashService.hashData(order)
+        return DB.addOrder(order, idempotencyKey, bodyHash)
     }
 
     fun getOrder(id: Int): Order {
@@ -34,10 +34,5 @@ class OrderService {
 
     fun findOrders(status: OrderStatus?, productid: Int?): List<Order> {
         return DB.findOrders(status, productid)
-    }
-
-    fun createBulkOrders(orders: List<Order>, idempotencyKey: UUID): List<Id> {
-        val idempotencyHash = hashService.hashData(orders, idempotencyKey)
-        return DB.createBulkOrders(orders, idempotencyHash)
     }
 }

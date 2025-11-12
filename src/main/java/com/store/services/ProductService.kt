@@ -24,8 +24,8 @@ class ProductService {
     }
 
     fun addProduct(product: Product, idempotencyKey: UUID): Id {
-        val idempotencyHash = hashService.hashData(product, idempotencyKey)
-        return DB.addProduct(product, idempotencyHash)
+        val bodyHash = hashService.hashData(product)
+        return DB.addProduct(product, idempotencyKey, bodyHash)
     }
 
     fun deleteProduct(id: Int) {

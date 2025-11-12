@@ -1,5 +1,6 @@
 package com.store.handlers
 
+import com.store.exceptions.IdempotencyConflictException
 import com.store.exceptions.NotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -9,6 +10,17 @@ import java.time.LocalDateTime
 
 @ControllerAdvice
 class GlobalExceptionHandler {
+    @ExceptionHandler(IdempotencyConflictException::class)
+    fun handleIdempotencyConflict(ex: IdempotencyConflictException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
+            errorResponse(
+                httpStatus = HttpStatus.UNPROCESSABLE_ENTITY,
+                ex = ex,
+                error = "Unprocessable Entity",
+                message = ex.message ?: "Entity cannot be processed idempotency conflict",
+            ),
+        )
+    }
 
     @ExceptionHandler(NotFoundException::class)
     fun handleGenericException(ex: NotFoundException): ResponseEntity<ErrorResponse> {

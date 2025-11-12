@@ -1,33 +1,42 @@
 package com.store.model
 
+import com.store.exceptions.IdempotencyConflictException
 import com.store.exceptions.UnrecognizedTypeException
 import jakarta.validation.ValidationException
+import java.util.UUID
+
+private data class IdempotentRecord<T>(val bodyHash: String, val result: T)
 
 object DB {
-    private var PRODUCTS: MutableMap<Int, Product> =
-        mutableMapOf(
-            10 to Product("XYZ Phone", "gadget", 10, 10),
-            20 to Product("Gemini", "dog", 10, 20),
-            30 to Product("Cleaner", "gadget", 10, 30)
-        )
-    private var PRODUCT_IMAGE: MutableMap<Int, String> =
-        mutableMapOf(10 to "https://example.com/image.jpg", 20 to "https://example.com/image.jpg")
-    private var ORDERS: MutableMap<Int, Order> =
-        mutableMapOf(10 to Order(10, 2, OrderStatus.pending, 10), 20 to Order(10, 1, OrderStatus.pending, 20))
+    private val IDEMPOTENCY_STORE: MutableMap<UUID, IdempotentRecord<Any>> = mutableMapOf()
     private val USERS: Map<String, User> = mapOf("API-TOKEN-SPEC" to User("Hari"))
-    private val IDEMPOTENCY_STORE: MutableMap<String, Any> = mutableMapOf()
+    private var ORDERS: MutableMap<Int, Order> = mutableMapOf(10 to Order(10, 2, OrderStatus.pending, 10), 20 to Order(10, 1, OrderStatus.pending, 20))
+    private var PRODUCT_IMAGE: MutableMap<Int, String> = mutableMapOf(10 to "https://example.com/image.jpg", 20 to "https://example.com/image.jpg")
+    private var PRODUCTS: MutableMap<Int, Product> = mutableMapOf(
+        10 to Product("XYZ Phone", "gadget", 10, 10),
+        20 to Product("Gemini", "dog", 10, 20),
+        30 to Product("Cleaner", "gadget", 10, 30),
+    )
 
     fun userCount(): Int {
         return USERS.values.count()
     }
 
-    fun <T> executeIdempotent(idempotencyHash: String, block: () -> T): T {
-        @Suppress("UNCHECKED_CAST")
-        return IDEMPOTENCY_STORE[idempotencyHash] as? T ?: run {
-            val result = block()
-            IDEMPOTENCY_STORE[idempotencyHash] = result as Any
-            result
+    fun <T> executeIdempotent(idempotencyKey: UUID, bodyHash: String, block: () -> T): T {
+        val existing = IDEMPOTENCY_STORE[idempotencyKey]
+
+        if (existing != null) {
+            if (existing.bodyHash != bodyHash) {
+                throw IdempotencyConflictException("Idempotency key $idempotencyKey is already used with different request body")
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            return existing.result as T
         }
+
+        val result = block()
+        IDEMPOTENCY_STORE[idempotencyKey] = IdempotentRecord(bodyHash, result as Any)
+        return result
     }
 
     fun resetDB() {
@@ -40,8 +49,8 @@ object DB {
         IDEMPOTENCY_STORE.clear()
     }
 
-    fun addProduct(product: Product, idempotencyHash: String): Id {
-        return executeIdempotent(idempotencyHash) {
+    fun addProduct(product: Product, idempotencyKey: UUID, bodyHash: String): Id {
+        return executeIdempotent(idempotencyKey, bodyHash) {
             PRODUCTS[product.id] = product
             return@executeIdempotent Id(product.id)
         }
@@ -75,8 +84,8 @@ object DB {
         }
     }
 
-    fun addOrder(order: Order, idempotencyHash: String): Id {
-        return executeIdempotent(idempotencyHash) {
+    fun addOrder(order: Order, idempotencyKey: UUID, bodyHash: String): Id {
+        return executeIdempotent(idempotencyKey, bodyHash) {
             reserveProductInventory(order.productid, order.count)
             ORDERS[order.id] = order
             return@executeIdempotent Id(order.id)
@@ -112,15 +121,5 @@ object DB {
     fun updateProductImage(id: Int, imageFileName: String) {
         if (id !in PRODUCT_IMAGE) throw ValidationException("Product Id $id does not exist")
         PRODUCT_IMAGE[id] = imageFileName
-    }
-
-    fun createBulkOrders(orders: List<Order>, idempotencyHash: String): List<Id> {
-        return executeIdempotent(idempotencyHash) {
-            orders.map { order ->
-                reserveProductInventory(order.productid, order.count)
-                ORDERS[order.id] = order
-                Id(order.id)
-            }
-        }
     }
 }
