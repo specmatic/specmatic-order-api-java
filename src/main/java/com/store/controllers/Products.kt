@@ -24,7 +24,7 @@ open class Products {
     @Autowired
     lateinit var productService: ProductService
 
-    @PostMapping("/products/{id}")
+    @PatchMapping("/products/{id}")
     @Validated
     fun update(
         @PathVariable("id") id: Int,
@@ -78,7 +78,7 @@ open class Products {
     @PutMapping("/products/{id}/image", consumes = ["multipart/form-data"])
     fun uploadImage(@PathVariable("id") id: Int, @RequestPart("image") image: MultipartFile): ResponseEntity<Map<String, Any>> {
         productService.addImage(id, image.originalFilename, image.bytes)
-        val response = mapOf("message" to "Product image updated successfully", "productId" to id)
+        val response = mapOf("message" to "Product image updated successfully")
         return ResponseEntity(response, HttpStatus.OK)
     }
 }

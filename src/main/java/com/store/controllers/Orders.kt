@@ -52,7 +52,7 @@ class Orders {
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @PostMapping("/orders/{id}")
+    @PatchMapping("/orders/{id}")
     fun update(
         @PathVariable("id") id: Int,
         @Valid @RequestBody order: Order,
