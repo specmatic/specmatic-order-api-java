@@ -1,12 +1,13 @@
 package com.store.controllers
 
-import com.store.exceptions.NotFoundException
-import com.store.exceptions.ValidationException
 import com.store.model.Id
+import com.store.model.NewProductRequest
 import com.store.model.Product
+import com.store.model.ProductType
 import com.store.model.User
 import com.store.services.ProductService
 import jakarta.validation.Valid
+import jakarta.validation.constraints.NotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -16,11 +17,9 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
-private val typesOfProducts = listOf("gadget", "book", "food", "other")
-
+@Validated
 @RestController
 open class Products {
-
     @Autowired
     lateinit var productService: ProductService
 
@@ -28,31 +27,25 @@ open class Products {
     @Validated
     fun update(
         @PathVariable("id") id: Int,
-        @Valid @RequestBody product: Product,
-        @AuthenticationPrincipal user: User
+        @Valid @RequestBody request: NewProductRequest,
+        @AuthenticationPrincipal user: User,
     ): ResponseEntity<String> {
-        productService.updateProduct(id, product)
+        productService.updateProduct(id, request)
         return ResponseEntity(HttpStatus.OK)
     }
 
     @GetMapping("/products/{id}")
     fun get(@PathVariable("id") id: Int): Product {
-        try {
-            return productService.getProduct(id)
-        } catch (e: NoSuchElementException) {
-            throw NotFoundException(e.message!!)
-        }
+        return productService.getProduct(id)
     }
 
     @PostMapping("/products")
     fun create(
-        @Valid @RequestBody newProduct: Product,
-        @RequestHeader("Idempotency-Key") idempotencyKey: UUID,
-        @AuthenticationPrincipal user: User
+        @Valid @RequestBody request: NewProductRequest,
+        @NotNull @RequestHeader("Idempotency-Key", required = true) idempotencyKey: UUID,
+        @AuthenticationPrincipal user: User,
     ): ResponseEntity<Id> {
-        val productId = productService.addProduct(newProduct.also {
-            if (newProduct.type !in typesOfProducts) throw ValidationException("type must be one of ${typesOfProducts.joinToString(", ")}")
-        }, idempotencyKey)
+        val productId = productService.addProduct(request, idempotencyKey)
         return ResponseEntity(productId, HttpStatus.CREATED)
     }
 
@@ -65,8 +58,8 @@ open class Products {
     @GetMapping("/products")
     fun search(
         @RequestParam(name = "name", required = false) name: String?,
-        @RequestParam(name = "type", required = false) type: String?,
-        @RequestParam(name = "status", required = false) status: String?
+        @RequestParam(name = "type", required = false) type: ProductType?,
+        @RequestParam(name = "status", required = false) status: String?,
     ): ResponseEntity<List<Product>> {
         // An exception thrown by some internal bug...
         if (name == "unknown")

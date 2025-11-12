@@ -1,71 +1,80 @@
 package com.store.handlers
 
 import com.store.exceptions.IdempotencyConflictException
-import com.store.exceptions.NotFoundException
+import jakarta.validation.ConstraintViolationException
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.context.request.WebRequest
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.time.LocalDateTime
 
+data class ErrorResponse(val timestamp: LocalDateTime = LocalDateTime.now(), val status: Int, val error: String, val message: String)
+
 @ControllerAdvice
-class GlobalExceptionHandler {
-    @ExceptionHandler(IdempotencyConflictException::class)
-    fun handleIdempotencyConflict(ex: IdempotencyConflictException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
-            errorResponse(
-                httpStatus = HttpStatus.UNPROCESSABLE_ENTITY,
-                ex = ex,
-                error = "Unprocessable Entity",
-                message = ex.message ?: "Entity cannot be processed idempotency conflict",
-            ),
+class GlobalExceptionHandler : ResponseEntityExceptionHandler() {
+    override fun handleExceptionInternal(ex: java.lang.Exception, body: Any?, headers: HttpHeaders, statusCode: HttpStatusCode, request: WebRequest): ResponseEntity<Any>? {
+        val errorResponse = ErrorResponse(
+            status = statusCode.value(),
+            error = HttpStatus.valueOf(statusCode.value()).reasonPhrase,
+            message = ex.message ?: "Request processing error",
         )
+        return ResponseEntity.status(statusCode).body(errorResponse)
     }
 
-    @ExceptionHandler(NotFoundException::class)
-    fun handleGenericException(ex: NotFoundException): ResponseEntity<ErrorResponse> {
-        val notFound = HttpStatus.NOT_FOUND
-        return ResponseEntity.status(notFound).body(
-            errorResponse(
-                notFound,
-                ex,
-                "Requested resource not found",
-                "resource not found"
-            )
+    override fun handleMethodArgumentNotValid(ex: MethodArgumentNotValidException, headers: HttpHeaders, status: HttpStatusCode, request: WebRequest): ResponseEntity<Any> {
+        val fieldErrors = ex.bindingResult.fieldErrors.joinToString("; ") { "${it.field}: ${it.defaultMessage}" }
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Validation Failed",
+            message = fieldErrors,
         )
+        return ResponseEntity.badRequest().body(errorResponse)
+    }
+
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolation(ex: ConstraintViolationException): ResponseEntity<ErrorResponse> {
+        val violations = ex.constraintViolations.joinToString("; ") { "${it.propertyPath}: ${it.message}" }
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Constraint Violation",
+            message = violations,
+        )
+        return ResponseEntity.badRequest().body(errorResponse)
+    }
+
+    @ExceptionHandler(NoSuchElementException::class)
+    fun handleNotFound(ex: NoSuchElementException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.NOT_FOUND.value(),
+            error = "Not Found",
+            message = ex.message ?: "Resource not found",
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
+    }
+
+    @ExceptionHandler(IdempotencyConflictException::class)
+    fun handleIdempotencyConflict(ex: IdempotencyConflictException): ResponseEntity<ErrorResponse> {
+        val errorResponse = ErrorResponse(
+            status = HttpStatus.UNPROCESSABLE_ENTITY.value(),
+            error = "Unprocessable Entity",
+            message = ex.message ?: "Invalid application state",
+        )
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse)
     }
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
-        val badRequest = HttpStatus.BAD_REQUEST
-        return ResponseEntity.status(badRequest).body(
-            errorResponse(
-                badRequest,
-                ex,
-                "An error occurred while processing the request",
-                "Unknown error"
-            )
+        val errorResponse = ErrorResponse(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            error = "Unexpected Error",
+            message = ex.message ?: "An unexpected error occurred",
         )
-    }
-
-    private fun errorResponse(
-        httpStatus: HttpStatus,
-        ex: Exception,
-        error: String,
-        message: String
-    ): ErrorResponse {
-        return ErrorResponse(
-            LocalDateTime.now(),
-            httpStatus.value(),
-            error,
-            ex.message ?: message
-        )
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
     }
 }
-
-data class ErrorResponse(
-    val timestamp: LocalDateTime,
-    val status: Int,
-    val error: String,
-    val message: String
-)

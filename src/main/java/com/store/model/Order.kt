@@ -1,10 +1,21 @@
 package com.store.model
 
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Positive
 import java.util.concurrent.atomic.AtomicInteger
 
-class Order(@field:Positive val productid: Int = 0, @field:Positive val count: Int = 0, @field:NotNull var status: OrderStatus = OrderStatus.pending, val id: Int = idGenerator.getAndIncrement()) {
+data class Order(
+    val productid: Int,
+    val count: Int,
+    val status: OrderStatus = OrderStatus.pending,
+    val id: Int = 0
+) {
+    constructor(request: NewOrderRequest) : this(request.productid!!, request.count!!)
+
+    constructor(id: Int, request: UpdateOrderRequest) : this(request.productid!!, request.count!!, request.status!!, id)
+
+    fun ensureUniqueId(ids: Collection<Int>) = copy(
+        id = generateSequence(idGenerator::incrementAndGet).first { it !in ids },
+    )
+
     companion object {
         val idGenerator: AtomicInteger = AtomicInteger(1)
     }

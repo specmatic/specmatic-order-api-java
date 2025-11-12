@@ -1,10 +1,11 @@
 package com.store.services
 
-import com.store.exceptions.ValidationException
 import com.store.filestorage.LocalFileSystem
 import com.store.model.DB
 import com.store.model.Id
+import com.store.model.NewProductRequest
 import com.store.model.Product
+import com.store.model.ProductType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -18,13 +19,14 @@ class ProductService {
         return DB.findProduct(id)
     }
 
-    fun updateProduct(id: Int, product:Product){
-        if (id == 0) throw ValidationException("Product id cannot be null")
+    fun updateProduct(id: Int, request: NewProductRequest) {
+        val product = Product(id, request)
         DB.updateProduct(id, product)
     }
 
-    fun addProduct(product: Product, idempotencyKey: UUID): Id {
-        val bodyHash = hashService.hashData(product)
+    fun addProduct(request: NewProductRequest, idempotencyKey: UUID): Id {
+        val bodyHash = hashService.hashData(request)
+        val product = Product(request)
         return DB.addProduct(product, idempotencyKey, bodyHash)
     }
 
@@ -32,7 +34,7 @@ class ProductService {
         DB.deleteProduct(id)
     }
 
-    fun findProducts(name:String?, type:String?, status:String?): List<Product> {
+    fun findProducts(name:String?, type: ProductType?, status:String?): List<Product> {
         return DB.findProducts(name, type, status)
     }
 

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 class Internal {
     @Autowired
     lateinit var metricService: MetricService
+
     @GetMapping("/internal/metrics")
     fun metrics(): Int {
         return metricService.activeUsers()

@@ -1,10 +1,11 @@
 package com.store.services
 
-import com.store.exceptions.ValidationException
 import com.store.model.DB
 import com.store.model.Id
+import com.store.model.NewOrderRequest
 import com.store.model.Order
 import com.store.model.OrderStatus
+import com.store.model.UpdateOrderRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -14,8 +15,9 @@ class OrderService {
     @Autowired
     lateinit var hashService: HashService
 
-    fun createOrder(order: Order, idempotencyKey: UUID): Id {
-        val bodyHash = hashService.hashData(order)
+    fun createOrder(request: NewOrderRequest, idempotencyKey: UUID): Id {
+        val bodyHash = hashService.hashData(request)
+        val order = Order(request)
         return DB.addOrder(order, idempotencyKey, bodyHash)
     }
 
@@ -27,8 +29,8 @@ class OrderService {
         DB.deleteOrder(id)
     }
 
-    fun updateOrder(id: Int, order: Order) {
-        if (id == 0) throw ValidationException("Product id cannot be null")
+    fun updateOrder(id: Int, request: UpdateOrderRequest) {
+        val order = Order(id, request)
         DB.updateOrder(id, order)
     }
 
