@@ -13,7 +13,8 @@ object DB {
     private var PRODUCTS: MutableMap<Int, Product> = mutableMapOf(
         10 to Product("XYZ Phone", ProductType.gadget, 10, 10),
         20 to Product("Gemini", ProductType.other, 10, 20),
-        30 to Product("Cleaner", ProductType.gadget, 10, 30),
+        30 to Product("Margarita Pizza", ProductType.food, 10, 30),
+        40 to Product("Learn Specmatic", ProductType.book, 10, 40),
     )
 
     fun userCount(): Int {

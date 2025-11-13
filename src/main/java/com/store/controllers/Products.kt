@@ -8,6 +8,7 @@ import com.store.model.User
 import com.store.services.ProductService
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -60,12 +61,12 @@ open class Products {
         @RequestParam(name = "name", required = false) name: String?,
         @RequestParam(name = "type", required = false) type: ProductType?,
         @RequestParam(name = "status", required = false) status: String?,
+        @Positive @RequestHeader(name = "pageSize", required = false) pageSize: Int?,
     ): ResponseEntity<List<Product>> {
         // An exception thrown by some internal bug...
-        if (name == "unknown")
-            return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
+        if (name == "unknown") return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
         val products = productService.findProducts(name, type, status)
-        return ResponseEntity(products, HttpStatus.OK)
+        return ResponseEntity(products.take(pageSize ?: products.size), HttpStatus.OK)
     }
 
     @PutMapping("/products/{id}/image", consumes = ["multipart/form-data"])
