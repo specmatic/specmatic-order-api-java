@@ -52,27 +52,26 @@ mvnw.cmd test -Dtest=ContractTestUsingTestContainerTest
 
 ### 3. Using Docker Desktop
 
-Start the application in one terminal:
-
 For **Unix based systems** and **Windows PowerShell**:
+
 ```shell
+# Start the service
 ./mvnw spring-boot:run
 ```
 
-For **Windows Command Prompt**:
 ```shell
-mvnw.cmd spring-boot:run
-```
-
-Run the contract tests from another terminal:
-
-For **Unix based systems** and **Windows PowerShell**:
-```shell
+# Run the contract tests
 docker run --rm --network host -v "$(pwd)/specmatic.yaml:/usr/src/app/specmatic.yaml" -v "$(pwd)/build/reports/specmatic:/usr/src/app/build/reports/specmatic" specmatic/specmatic test --port=8090
 ```
 
 For **Windows Command Prompt**:
 ```shell
+# Start the service
+mvnw.cmd spring-boot:run
+```
+
+```shell
+# Run the contract tests
 docker run --rm --network host -v "%cd%/specmatic.yaml:/usr/src/app/specmatic.yaml" -v "%cd%/build/reports/specmatic:/usr/src/app/build/reports/specmatic" specmatic/specmatic test --port=8090
 ```
 
