@@ -1,76 +1,81 @@
-# Specmatic Sample Client Application
+# Specmatic Sample: Spring Boot Order API
 
-![HTML client talks to client API which talks to backend api](specmatic-sample-architecture.svg)
+Table of Contents
+<!-- TOC -->
+* [Specmatic Sample: Spring Boot Order API](#specmatic-sample-spring-boot-order-api)
+  * [Background](#background)
+  * [Tech](#tech)
+  * [Run Contract Tests](#run-contract-tests)
+    * [1. Using Maven](#1-using-maven)
+    * [3. Using Docker Desktop](#3-using-docker-desktop)
+  * [For More Info](#for-more-info)
+<!-- TOC -->
 
-BFF = Backend For Frontend, the API invoked by the HTTP calls in the client HTML page (Website UI).
+## Background
+This sample project demonstrates how Specmatic can be used to contract test an API in isolation before integrating with consumers.
 
-This project contains the product API, which is used by a small ecommerce client application.
+The interaction between Order API in this project and it's consumers is governed by this [OpenAPI specification.](https://github.com/specmatic/specmatic-order-contracts/blob/main/io/specmatic/examples/store/openapi/api_order_v3.yaml).
 
-Here is the [contract](https://github.com/specmatic/specmatic-order-contracts/blob/main/io/specmatic/examples/store/openapi/api_order_v3.yaml) governing the interaction of the client with the product API.
+## Tech
+1. Spring Boot service written in Java
+2. Specmatic
+3. Docker Desktop (for running contract tests with containers)
 
-The architecture diagram was created using the amazing free online SVG editor at [Vectr](https://vectr.com).
+## Run Contract Tests
+Specmatic contract tests use the [specmatic.yaml](specmatic.yaml) configuration file to start the required Specmatic stub before verifying the Order API.
 
-### How to run the application manually?
+### 1. Using Maven
 
-#### 1. Build the project using maven:
-
-- For unix platform and powerShell:<br/>
+For **Unix based systems** and **Windows PowerShell**:
 ```shell
-./mvnw clean install
+./mvnw test -Dtest=ContractTest
 ```
 
-- For windows command prompt:<br/>
+For **Windows Command Prompt**:
 ```shell
-mvnw.cmd clean install
+mvnw.cmd test -Dtest=ContractTest
 ```
 
-#### 2. Run the application using maven:
+After the tests complete, view the report at [build/reports/specmatic/html/index.html](build/reports/specmatic/html/index.html).
 
-- For unix platform and powerShell:<br/>
+#### Contract Tests Using TestContainers
+
+For **Unix based systems** and **Windows PowerShell**:
+```shell
+./mvnw test -Dtest=ContractTestUsingTestContainerTest
+```
+
+For **Windows Command Prompt**:
+```shell
+mvnw.cmd test -Dtest=ContractTestUsingTestContainerTest
+```
+
+### 3. Using Docker Desktop
+
+Start the application in one terminal:
+
+For **Unix based systems** and **Windows PowerShell**:
 ```shell
 ./mvnw spring-boot:run
 ```
 
-- For windows command prompt:<br/>
+For **Windows Command Prompt**:
 ```shell
 mvnw.cmd spring-boot:run
 ```
 
-### How to test the application?
+Run the contract tests from another terminal:
 
-#### 1. Using maven:
-- For unix platform and powerShell:<br/>
+For **Unix based systems** and **Windows PowerShell**:
 ```shell
-./mvnw test
+docker run --rm --network host -v "$(pwd)/specmatic.yaml:/usr/src/app/specmatic.yaml" -v "$(pwd)/build/reports/specmatic:/usr/src/app/build/reports/specmatic" specmatic/specmatic test --port=8090
 ```
 
-- For windows command prompt:<br/>
+For **Windows Command Prompt**:
 ```shell
-mvnw.cmd test
+docker run --rm --network host -v "%cd%/specmatic.yaml:/usr/src/app/specmatic.yaml" -v "%cd%/build/reports/specmatic:/usr/src/app/build/reports/specmatic" specmatic/specmatic test --port=8090
 ```
 
-#### 2. Using Docker Desktop:
-
-##### 1. Run the application using maven:
-
-- For unix platform and powerShell:<br/>
-```shell
-./mvnw spring-boot:run
-```
-
-- For windows command prompt:<br/>
-```shell
-mvnw.cmd spring-boot:run
-```
-
-##### 2. Run the contract tests using Docker:
-
-- For unix platform and powerShell:<br/>
-```shell
-docker run --rm -v --network host "$(pwd)/specmatic.yaml:/usr/src/app/specmatic.yaml" -v "$(pwd)/build/reports/specmatic:/usr/src/app/build/reports/specmatic"  specmatic/specmatic test --port=8090
-```
-
-- For windows command prompt:<br/>
-```shell
-docker run --rm -v --network host "%cd%/specmatic.yaml:/usr/src/app/specmatic.yaml" -v "%cd%/build/reports/specmatic:/usr/src/app/build/reports/specmatic"  specmatic/specmatic test --port=8090
-```
+## For More Info
+* [Specmatic Website](https://specmatic.io)
+* [Specmatic Documentation](https://docs.specmatic.io)
