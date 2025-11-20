@@ -16,7 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @EnabledIf(value = "isNonCIOrLinux", disabledReason = "Run only on Linux in CI; all platforms allowed locally")
 public class ContractTestUsingTestContainerTest {
-
+    private static final String dockerHostAddress = System.getProperty("docker.host.address", "host-gateway");
     private static final String APPLICATION_HOST = "host.docker.internal";
     private static final int APPLICATION_PORT = 8090;
     private static final String EXCLUDED_ENDPOINTS = "'/internal/metrics'";
@@ -25,18 +25,28 @@ public class ContractTestUsingTestContainerTest {
         return !"true".equals(System.getenv("CI")) || System.getProperty("os.name").toLowerCase().contains("linux");
     }
 
-    private static final GenericContainer<?> testContainer = new GenericContainer<>("specmatic/specmatic:latest")
-            .withCommand("test", "--host=" + APPLICATION_HOST, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS)
-            .withEnv("SPECMATIC_GENERATIVE_TESTS", "true")
-            .withEnv("SPECMATIC_TEST_PARALLELISM", "auto")
-            .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
-            .withFileSystemBind("./build/reports/specmatic", "/usr/src/app/build/reports/specmatic", BindMode.READ_WRITE)
-            .waitingFor(Wait.forLogMessage(".*Tests run:.*", 1))
-            .withExtraHost("host.docker.internal", "host-gateway")
-            .withLogConsumer((OutputFrame output) -> System.out.print(output.getUtf8String()));
+    private static final GenericContainer<?> testContainer;
+
+    static {
+
+        System.out.println("Using docker host address: " + dockerHostAddress);
+        testContainer = new GenericContainer<>("specmatic/specmatic:latest")
+                .withCommand("test", "--host=" + dockerHostAddress, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS)
+                .withEnv("SPECMATIC_GENERATIVE_TESTS", "true")
+                .withEnv("SPECMATIC_TEST_PARALLELISM", "auto")
+                .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
+                .withFileSystemBind("./build/reports/specmatic", "/usr/src/app/build/reports/specmatic", BindMode.READ_WRITE)
+                // For Docker Desktop on Windows and Mac, "host.docker.internal" is used to refer to the host machine.
+                // For Docker on Linux, we use "host-gateway" to refer to the host
+                // for tests running in gitlab ci, we set the docker host address via system property
+                .withExtraHost("host.docker.internal", dockerHostAddress)
+                .waitingFor(Wait.forLogMessage(".*Tests run:.*", 1))
+                .withLogConsumer((OutputFrame output) -> System.out.print(output.getUtf8String()));
+    }
 
     @BeforeAll
     public static void setup() {
+        System.out.println("Running contract tests using Specmatic Test Container against application at " + dockerHostAddress + ":" + APPLICATION_PORT);
         DB.INSTANCE.resetDB();
     }
 

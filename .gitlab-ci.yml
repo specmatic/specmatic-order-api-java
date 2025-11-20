@@ -1,0 +1,39 @@
+stages:
+ - build
+
+build-with-test-containers:
+  stage: build
+  image: amazoncorretto:17-alpine
+  services:
+    - name: docker:dind
+      alias: docker
+      # explicitly disable tls to avoid docker startup interruption
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+    MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  cache:
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - HOST_IP=$(awk -v h="$HOSTNAME" '$2 == h && $1 ~ /^[0-9.]+$/ {print $1}' /etc/hosts)
+    - ./mvnw test package jacoco:report -Ptest -Dtest=ContractTestUsingTestContainerTest -Ddocker.host.address=$HOST_IP
+  artifacts:
+    paths:
+      - build/reports/specmatic
+
+#build-without-test-containers:
+#  stage: build
+#  image: amazoncorretto:17-alpine
+#  variables:
+#    MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+#  cache:
+#    paths:
+#      - $CI_PROJECT_DIR/.m2/repository
+#  script:
+#    - ./mvnw test package jacoco:report -Ptest -Dtest=ContractTest
+#  artifacts:
+#    paths:
+#      - build/reports/specmatic

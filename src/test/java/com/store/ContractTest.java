@@ -17,6 +17,7 @@ public class ContractTest implements SpecmaticContractTest {
         System.setProperty("SPECMATIC_GENERATIVE_TESTS", "true");
         System.setProperty("SPECMATIC_TEST_PARALLELISM", "auto");
         System.setProperty("filter", String.format("PATH!=%s", EXCLUDED_ENDPOINTS));
+        System.out.println("Running contract tests using Specmatic against application at localhost:8080");
 
         DB.INSTANCE.resetDB();
 
