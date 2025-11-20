@@ -24,16 +24,16 @@ build-with-test-containers:
     paths:
       - build/reports/specmatic
 
-#build-without-test-containers:
-#  stage: build
-#  image: amazoncorretto:17-alpine
-#  variables:
-#    MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
-#  cache:
-#    paths:
-#      - $CI_PROJECT_DIR/.m2/repository
-#  script:
-#    - ./mvnw test package jacoco:report -Ptest -Dtest=ContractTest
-#  artifacts:
-#    paths:
-#      - build/reports/specmatic
+build-without-test-containers:
+  stage: build
+  image: amazoncorretto:17-alpine
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  cache:
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - ./mvnw test package jacoco:report -Ptest -Dtest=ContractTest
+  artifacts:
+    paths:
+      - build/reports/specmatic
