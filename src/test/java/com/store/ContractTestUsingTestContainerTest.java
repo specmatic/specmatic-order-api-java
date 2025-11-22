@@ -31,7 +31,7 @@ public class ContractTestUsingTestContainerTest {
 
         System.out.println("Using docker host address: " + dockerHostAddress);
         testContainer = new GenericContainer<>("specmatic/specmatic:latest")
-                .withCommand("test", "--host=" + dockerHostAddress, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS)
+                .withCommand("test", "--host=" + APPLICATION_HOST, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS)
                 .withEnv("SPECMATIC_GENERATIVE_TESTS", "true")
                 .withEnv("SPECMATIC_TEST_PARALLELISM", "auto")
                 .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
