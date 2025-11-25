@@ -1,5 +1,6 @@
 package com.store.services
 
+import com.store.controllers.DateRange
 import com.store.filestorage.LocalFileSystem
 import com.store.model.DB
 import com.store.model.Id
@@ -34,8 +35,10 @@ class ProductService {
         DB.deleteProduct(id)
     }
 
-    fun findProducts(name:String?, type: ProductType?, status:String?): List<Product> {
-        return DB.findProducts(name, type, status)
+    fun findProducts(name: String?, type: ProductType?, status: String?, dateRange: DateRange?): List<Product> {
+        return DB.findProducts(name, type, status).filter {
+            dateRange?.contains(it.createdOn) ?: true
+        }
     }
 
     fun addImage(id: Int, imageFileName: String, bytes: ByteArray) {
