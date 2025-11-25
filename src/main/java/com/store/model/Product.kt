@@ -1,6 +1,5 @@
 package com.store.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -9,7 +8,7 @@ data class Product(
     val type: ProductType,
     val inventory: Int,
     val id: Int = 0,
-    @JsonIgnore val createdOn: LocalDateTime = LocalDateTime.now()
+    val createdOn: LocalDateTime = LocalDateTime.now()
 ) {
     constructor(request: NewProductRequest) : this(0, request)
 
