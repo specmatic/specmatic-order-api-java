@@ -17,7 +17,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Validated
@@ -64,8 +66,8 @@ open class Products {
         @RequestParam(name = "type", required = false) type: ProductType?,
         @RequestParam(name = "status", required = false) status: String?,
         @Positive @RequestHeader(name = "pageSize", required = false) pageSize: Int?,
-        @RequestParam(name = "from-date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) fromDate: LocalDateTime?,
-        @RequestParam(name = "to-date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) toDate: LocalDateTime?,
+        @RequestParam(name = "from-date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) fromDate: LocalDate?,
+        @RequestParam(name = "to-date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) toDate: LocalDate?,
     ): ResponseEntity<List<Product>> {
         if (name == "unknown") return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
 

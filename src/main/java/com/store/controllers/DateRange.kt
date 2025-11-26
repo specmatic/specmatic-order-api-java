@@ -1,12 +1,12 @@
 package com.store.controllers
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
-class DateRange(requestedFromDate: LocalDateTime?, requestedToDate: LocalDateTime?) {
-    private val toDate: LocalDateTime = requestedToDate ?: LocalDateTime.now()
-    private val fromDate: LocalDateTime = requestedFromDate ?: toDate.minusWeeks(1)
+class DateRange(requestedFromDate: LocalDate?, requestedToDate: LocalDate?) {
+    private val toDate: LocalDate = requestedToDate ?: LocalDate.now()
+    private val fromDate: LocalDate = requestedFromDate ?: toDate.minusWeeks(1)
 
-    fun contains(dateTime: LocalDateTime): Boolean {
+    fun contains(dateTime: LocalDate): Boolean {
         return dateTime in fromDate..toDate
     }
 }
