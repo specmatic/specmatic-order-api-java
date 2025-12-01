@@ -4,6 +4,7 @@ import com.example.inventory.GetInventoryRequest
 import com.example.inventory.InventoryService
 import com.store.exceptions.IdempotencyConflictException
 import jakarta.xml.ws.BindingProvider
+import java.io.File
 import java.util.UUID
 
 private data class IdempotentRecord<T>(val bodyHash: String, val result: T)
@@ -82,8 +83,13 @@ object DB {
             product.name == name || product.type == type || inventoryStatus(id) == status
         }.values.toList()
 
-        val inventoryService = InventoryService()
+        println("Connecting to Inventory Service to fetch inventory details...")
+        val wsdlURL = DB.javaClass.getResource("/wsdls/inventory.wsdl")?.also {
+            println("Found inventory WSDL at $it")
+        } ?: error("Inventory WSDL not found in resources")
+        val inventoryService = InventoryService(wsdlURL)
 
+        println("Determining service endpoint...")
         val inventoryServiceURL =
             System.getenv("ORDER_INVENTORY_API_URL") ?:
             System.getProperty("ORDER_INVENTORY_API_URL") ?:
@@ -92,7 +98,14 @@ object DB {
         println("Calling Inventory Service at $inventoryServiceURL")
 
         val inventoryServicePort = inventoryService.inventoryServicePort.apply {
-            (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] = inventoryServiceURL
+            try {
+                (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] =
+                    inventoryServiceURL
+            } catch(e: Throwable) {
+                println(e)
+                e.printStackTrace()
+                throw e
+            }
         }
 
         return products.map { product ->
@@ -100,9 +113,15 @@ object DB {
                 it.productid = product.id
             }
 
-            val response = inventoryServicePort.getInventory(getInventoryRequest)
+            try {
+                val response = inventoryServicePort.getInventory(getInventoryRequest)
 
-            product.copy(inventory = response.inventory)
+                product.copy(inventory = response.inventory)
+            } catch(e: Throwable) {
+                println(e)
+                e.printStackTrace()
+                throw e
+            }
         }
     }
 
