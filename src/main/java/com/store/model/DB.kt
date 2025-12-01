@@ -89,6 +89,8 @@ object DB {
             System.getProperty("ORDER_INVENTORY_API_URL") ?:
             "http://localhost:8095/ws"
 
+        println("Calling Inventory Service at $inventoryServiceURL")
+
         val inventoryServicePort = inventoryService.inventoryServicePort.apply {
             (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] = inventoryServiceURL
         }
