@@ -1,6 +1,9 @@
 package com.store.model
 
+import com.example.inventory.GetInventoryRequest
+import com.example.inventory.InventoryService
 import com.store.exceptions.IdempotencyConflictException
+import jakarta.xml.ws.BindingProvider
 import java.util.UUID
 
 private data class IdempotentRecord<T>(val bodyHash: String, val result: T)
@@ -75,9 +78,24 @@ object DB {
     }
 
     fun findProducts(name: String?, type: ProductType?, status: String?): List<Product> {
-        return PRODUCTS.filter { (id, product) ->
+        val products = PRODUCTS.filter { (id, product) ->
             product.name == name || product.type == type || inventoryStatus(id) == status
         }.values.toList()
+
+        val inventoryService = InventoryService()
+        val inventoryServicePort = inventoryService.inventoryServicePort.apply {
+            (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] = "http://localhost:9000/ws"
+        }
+
+        return products.map { product ->
+            val getInventoryRequest = GetInventoryRequest().also {
+                it.productid = product.id
+            }
+
+            val response = inventoryServicePort.getInventory(getInventoryRequest)
+
+            product.copy(inventory = response.inventory)
+        }
     }
 
     private fun inventoryStatus(productid: Int): String {

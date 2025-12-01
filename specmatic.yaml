@@ -4,6 +4,8 @@ contracts:
       url: https://github.com/specmatic/specmatic-order-contracts.git
     provides:
       - io/specmatic/examples/store/openapi/api_order_v5.yaml
+  - consumes:
+      - wsdls/inventory.wsdl
 report:
   types:
     APICoverage:
