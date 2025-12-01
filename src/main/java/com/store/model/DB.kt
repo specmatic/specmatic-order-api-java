@@ -50,9 +50,8 @@ object DB {
 
     fun addProduct(product: Product, idempotencyKey: UUID, bodyHash: String): Id {
         return executeIdempotent(idempotencyKey, bodyHash) {
-            val productWithUniqueId = product.ensureUniqueId(PRODUCTS.keys)
-            PRODUCTS[productWithUniqueId.id] = productWithUniqueId
-            return@executeIdempotent Id(productWithUniqueId.id)
+            PRODUCTS[product.id] = product
+            return@executeIdempotent Id(product.id)
         }
     }
 
@@ -74,25 +73,16 @@ object DB {
         PRODUCTS.remove(id)
     }
 
-    fun findProducts(name: String?, type: ProductType?, status: String?): List<Product> {
-        return PRODUCTS.filter { (id, product) ->
-            product.name == name || product.type == type || inventoryStatus(id) == status
+    fun findProducts(name: String?, type: ProductType?): List<Product> {
+        return PRODUCTS.filter { (_, product) ->
+            (name == null || product.name == name) && (type == null || product.type == type)
         }.values.toList()
-    }
-
-    private fun inventoryStatus(productid: Int): String {
-        return when (PRODUCTS.getValue(productid).inventory) {
-            0 -> "sold"
-            else -> "available"
-        }
     }
 
     fun addOrder(order: Order, idempotencyKey: UUID, bodyHash: String): Id {
         return executeIdempotent(idempotencyKey, bodyHash) {
-            reserveProductInventory(order.productid, order.count)
-            val orderWithUniqueId = order.ensureUniqueId(ORDERS.keys)
-            ORDERS[orderWithUniqueId.id] = orderWithUniqueId
-            return@executeIdempotent Id(orderWithUniqueId.id)
+            ORDERS[order.id] = order
+            return@executeIdempotent Id(order.id)
         }
     }
 
@@ -117,17 +107,12 @@ object DB {
         ORDERS[id] = updatedOrder
     }
 
-    fun reserveProductInventory(productId: Int, count: Int) {
-        if (productId !in PRODUCTS) throw NoSuchElementException("Product with id $productId does not exist")
-        val updatedProduct = PRODUCTS.getValue(productId).let {
-            it.copy(inventory = it.inventory - count)
-        }
-
-        PRODUCTS[productId] = updatedProduct
-    }
-
     fun updateProductImage(id: Int, imageFileName: String) {
         if (id !in PRODUCTS) throw NoSuchElementException("Product with id $id does not exist")
         PRODUCT_IMAGE[id] = imageFileName
     }
+
+    fun ensureUniqueId(product: Product): Product = product.ensureUniqueId(PRODUCTS.keys)
+
+    fun ensureUniqueId(order: Order): Order = order.ensureUniqueId(PRODUCTS.keys)
 }

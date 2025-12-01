@@ -1,5 +1,6 @@
 package com.store.services
 
+import com.store.backend.InventoryService
 import com.store.model.DB
 import com.store.model.Id
 import com.store.model.NewOrderRequest
@@ -15,9 +16,13 @@ class OrderService {
     @Autowired
     lateinit var hashService: HashService
 
+    @Autowired
+    lateinit var inventoryService: InventoryService
+
     fun createOrder(request: NewOrderRequest, idempotencyKey: UUID): Id {
         val bodyHash = hashService.hashData(request)
-        val order = Order(request)
+        val order = DB.ensureUniqueId(Order(request))
+        inventoryService.reserveInventory(order.productid, order.count)
         return DB.addOrder(order, idempotencyKey, bodyHash)
     }
 

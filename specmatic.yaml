@@ -1,9 +1,12 @@
 version: 2
 contracts:
   - git:
+      branch: ui-demo
       url: https://github.com/specmatic/specmatic-order-contracts.git
     provides:
       - io/specmatic/examples/store/openapi/api_order_v5.yaml
+    consumes:
+      - io/specmatic/examples/store/openapi/api_inventory_v1.yaml
 report:
   types:
     APICoverage:
