@@ -83,8 +83,14 @@ object DB {
         }.values.toList()
 
         val inventoryService = InventoryService()
+
+        val inventoryServiceURL =
+            System.getenv("ORDER_INVENTORY_API_URL") ?:
+            System.getProperty("ORDER_INVENTORY_API_URL") ?:
+            "http://localhost:8095/ws"
+
         val inventoryServicePort = inventoryService.inventoryServicePort.apply {
-            (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] = "http://localhost:8095/ws"
+            (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] = inventoryServiceURL
         }
 
         return products.map { product ->
