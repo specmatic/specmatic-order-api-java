@@ -1,23 +1,20 @@
 package com.store.controllers
 
-import com.store.model.Id
-import com.store.model.NewProductRequest
-import com.store.model.Product
-import com.store.model.ProductResponse
-import com.store.model.ProductType
-import com.store.model.User
+import com.store.model.*
 import com.store.services.ProductService
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
+import java.time.LocalDate
+import java.util.*
 
 @Validated
 @RestController
@@ -63,10 +60,15 @@ open class Products {
         @RequestParam(name = "type", required = false) type: ProductType?,
         @RequestParam(name = "status", required = false) status: String?,
         @Positive @RequestHeader(name = "pageSize", required = false) pageSize: Int?,
+        @RequestParam(name = "from-date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) fromDate: LocalDate?,
+        @RequestParam(name = "to-date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) toDate: LocalDate?,
     ): ResponseEntity<List<ProductResponse>> {
-        // An exception thrown by some internal bug...
         if (name == "unknown") return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
-        val products = productService.findProducts(name, type, status)
+
+        val dateRange = if (fromDate != null || toDate != null) DateRange(fromDate, toDate) else null
+
+        val products = productService.findProducts(name, type, status, dateRange)
+
         return ResponseEntity(products.take(pageSize ?: products.size), HttpStatus.OK)
     }
 

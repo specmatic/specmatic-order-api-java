@@ -2,6 +2,7 @@ version: 2
 contracts:
   - git:
       url: https://github.com/specmatic/specmatic-order-contracts.git
+      branch: dynamic
     provides:
       - io/specmatic/examples/store/openapi/api_order_v5.yaml
   - consumes:
