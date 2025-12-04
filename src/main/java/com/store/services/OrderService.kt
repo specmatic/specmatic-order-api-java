@@ -15,10 +15,17 @@ class OrderService {
     @Autowired
     lateinit var hashService: HashService
 
+    @Autowired
+    lateinit var inventoryServiceClient: InventoryServiceClient
+
     fun createOrder(request: NewOrderRequest, idempotencyKey: UUID): Id {
         val bodyHash = hashService.hashData(request)
         val order = Order(request)
-        return DB.addOrder(order, idempotencyKey, bodyHash)
+        val orderId = DB.addOrder(order, idempotencyKey, bodyHash)
+
+        inventoryServiceClient.reduceInventory(request.productid!!, request.count!!)
+
+        return orderId
     }
 
     fun getOrder(id: Int): Order {

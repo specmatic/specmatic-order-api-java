@@ -3,6 +3,7 @@ package com.store.controllers
 import com.store.model.Id
 import com.store.model.NewProductRequest
 import com.store.model.Product
+import com.store.model.ProductResponse
 import com.store.model.ProductType
 import com.store.model.User
 import com.store.services.ProductService
@@ -36,7 +37,7 @@ open class Products {
     }
 
     @GetMapping("/products/{id}")
-    fun get(@PathVariable("id") id: Int): Product {
+    fun get(@PathVariable("id") id: Int): ProductResponse {
         return productService.getProduct(id)
     }
 
@@ -62,7 +63,7 @@ open class Products {
         @RequestParam(name = "type", required = false) type: ProductType?,
         @RequestParam(name = "status", required = false) status: String?,
         @Positive @RequestHeader(name = "pageSize", required = false) pageSize: Int?,
-    ): ResponseEntity<List<Product>> {
+    ): ResponseEntity<List<ProductResponse>> {
         // An exception thrown by some internal bug...
         if (name == "unknown") return ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR)
         val products = productService.findProducts(name, type, status)

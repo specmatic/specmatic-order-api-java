@@ -6,7 +6,7 @@
       "Content-Type": "text/xml",
       "SOAPAction": "/reduceInventory"
     },
-    "body": "<soapenv:Envelope xmlns:Inventory=\"http://www.example.com/inventory\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><soapenv:Header/><soapenv:Body><Inventory:ReduceInventoryRequest><Inventory:productid>1</Inventory:productid><Inventory:inventory>5</Inventory:inventory></Inventory:ReduceInventoryRequest></soapenv:Body></soapenv:Envelope>"
+    "body": "<soapenv:Envelope xmlns:Inventory=\"http://www.example.com/inventory\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"><soapenv:Header/><soapenv:Body><Inventory:ReduceInventoryRequest><Inventory:productid>(number))</Inventory:productid><Inventory:inventory>(number)</Inventory:inventory></Inventory:ReduceInventoryRequest></soapenv:Body></soapenv:Envelope>"
   },
   "http-response": {
     "status": 200,

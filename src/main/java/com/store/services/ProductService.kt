@@ -5,6 +5,7 @@ import com.store.model.DB
 import com.store.model.Id
 import com.store.model.NewProductRequest
 import com.store.model.Product
+import com.store.model.ProductResponse
 import com.store.model.ProductType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -15,7 +16,10 @@ class ProductService {
     @Autowired
     lateinit var hashService: HashService
 
-    fun getProduct(id: Int): Product {
+    @Autowired
+    lateinit var inventoryServiceClient: InventoryServiceClient
+
+    fun getProduct(id: Int): ProductResponse {
         return DB.findProduct(id)
     }
 
@@ -26,15 +30,20 @@ class ProductService {
 
     fun addProduct(request: NewProductRequest, idempotencyKey: UUID): Id {
         val bodyHash = hashService.hashData(request)
+        val inventory = request.inventory!!
         val product = Product(request)
-        return DB.addProduct(product, idempotencyKey, bodyHash)
+        val productId = DB.addProduct(product, idempotencyKey, bodyHash)
+
+        inventoryServiceClient.addInventory(productId.id, inventory)
+
+        return productId
     }
 
     fun deleteProduct(id: Int) {
         DB.deleteProduct(id)
     }
 
-    fun findProducts(name:String?, type: ProductType?, status:String?): List<Product> {
+    fun findProducts(name:String?, type: ProductType?, status:String?): List<ProductResponse> {
         return DB.findProducts(name, type, status)
     }
 
