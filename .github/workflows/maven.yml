@@ -44,9 +44,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           docker run \
-            -v ${{ github.workspace }}:/workspace \
+            -v ${{ github.workspace }}:/usr/src/app \
             -v ~/.specmatic:/root/.specmatic \
-            -w /workspace \
             specmatic/specmatic \
             send-report \
             --metadata build_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \
