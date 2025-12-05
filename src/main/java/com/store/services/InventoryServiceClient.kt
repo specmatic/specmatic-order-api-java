@@ -18,8 +18,8 @@ class InventoryServiceClient {
         val port = service.inventoryServicePort
         val bindingProvider = port as BindingProvider
         val inventoryServiceUrl =
-            System.getenv("ORDER_INVENTORY_API_URL") ?:
-            System.getProperty("ORDER_INVENTORY_API_URL") ?:
+            System.getenv("INVENTORY_API_URL") ?:
+            System.getProperty("INVENTORY_API_URL") ?:
             inventoryServiceUrl
 
         bindingProvider.requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] = inventoryServiceUrl

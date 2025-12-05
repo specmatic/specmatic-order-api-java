@@ -89,7 +89,7 @@ public class ContractTestUsingTestContainerTest {
 
     @Test
     void specmaticContractTest() {
-        System.setProperty("ORDER_INVENTORY_API_URL", "http://localhost:" + HTTP_STUB_PORT + "/ws");
+        System.setProperty("INVENTORY_API_URL", "http://localhost:" + HTTP_STUB_PORT + "/ws");
         stubContainer.start();
         testContainer.start();
         boolean hasSucceeded = testContainer.getLogs().contains("Failures: 0");

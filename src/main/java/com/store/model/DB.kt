@@ -63,8 +63,8 @@ object DB {
         val inventoryService = InventoryService(wsdlURL)
 
         val inventoryServiceURL =
-            System.getenv("ORDER_INVENTORY_API_URL") ?:
-            System.getProperty("ORDER_INVENTORY_API_URL") ?:
+            System.getenv("INVENTORY_API_URL") ?:
+            System.getProperty("INVENTORY_API_URL") ?:
             "http://localhost:8095/ws"
 
         val inventoryServicePort = inventoryService.inventoryServicePort.apply {
@@ -103,8 +103,8 @@ object DB {
 
         println("Determining service endpoint...")
         val inventoryServiceURL =
-            System.getenv("ORDER_INVENTORY_API_URL") ?:
-            System.getProperty("ORDER_INVENTORY_API_URL") ?:
+            System.getenv("INVENTORY_API_URL") ?:
+            System.getProperty("INVENTORY_API_URL") ?:
             "http://localhost:8095/ws"
 
         println("Calling Inventory Service at $inventoryServiceURL")
