@@ -3,7 +3,7 @@ stages:
 
 build-with-test-containers:
   stage: build
-  image: amazoncorretto:17-alpine
+  image: amazoncorretto:17.0.17-alpine
   services:
     - name: docker:dind
       alias: docker
@@ -26,7 +26,7 @@ build-with-test-containers:
 
 build-without-test-containers:
   stage: build
-  image: amazoncorretto:17-alpine
+  image: amazoncorretto:17.0.17-alpine
   variables:
     MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
   cache:
