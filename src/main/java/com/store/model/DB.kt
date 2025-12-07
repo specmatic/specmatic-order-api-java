@@ -1,7 +1,6 @@
 package com.store.model
 
 import com.store.exceptions.IdempotencyConflictException
-import com.store.services.InventoryServiceClient
 import java.util.UUID
 
 private data class IdempotentRecord<T>(val bodyHash: String, val result: T)
@@ -52,12 +51,9 @@ object DB {
         }
     }
 
-    fun findProduct(id: Int, inventoryServiceClient: InventoryServiceClient): ProductResponse {
+    fun findProduct(id: Int): Product {
         if (id !in PRODUCTS) throw NoSuchElementException("Product Id $id does not exist")
-        val product = PRODUCTS.getValue(id)
-
-        val inventory = inventoryServiceClient.getInventory(product.id)
-        return ProductResponse(product, inventory)
+        return PRODUCTS.getValue(id)
     }
 
     fun updateProduct(id: Int, update: Product) {
@@ -74,16 +70,12 @@ object DB {
         name: String?,
         type: ProductType?,
         status: String?,
-        inventoryServiceClient: InventoryServiceClient
-    ): List<ProductResponse> {
+    ): List<Product> {
         val products = PRODUCTS.filter { (_, product) ->
             product.name == name || product.type == type
         }.values.toList()
 
-        return products.map { product ->
-            val inventory = inventoryServiceClient.getInventory(product.id)
-            ProductResponse(product, inventory)
-        }
+        return products
     }
 
     fun addOrder(order: Order, idempotencyKey: UUID, bodyHash: String): Id {

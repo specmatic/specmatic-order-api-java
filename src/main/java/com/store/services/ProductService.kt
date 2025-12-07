@@ -21,7 +21,9 @@ class ProductService {
     lateinit var inventoryServiceClient: InventoryServiceClient
 
     fun getProduct(id: Int): ProductResponse {
-        return DB.findProduct(id, inventoryServiceClient)
+        val product = DB.findProduct(id)
+        val inventory = inventoryServiceClient.getInventory(product.id)
+        return ProductResponse(product, inventory)
     }
 
     fun updateProduct(id: Int, request: NewProductRequest) {
@@ -45,9 +47,14 @@ class ProductService {
     }
 
     fun findProducts(name: String?, type: ProductType?, status: String?, dateRange: DateRange?): List<ProductResponse> {
-        return DB.findProducts(name, type, status, inventoryServiceClient).filter {
-            dateRange?.contains(it.createdOn) ?: true
+        val products = DB.findProducts(name, type, status)
+
+        val productResponses = products.map { product ->
+            val inventory = inventoryServiceClient.getInventory(product.id)
+            ProductResponse(product, inventory)
         }
+
+        return productResponses.filter { dateRange?.contains(it.createdOn) ?: true }
     }
 
     fun addImage(id: Int, imageFileName: String, bytes: ByteArray) {
