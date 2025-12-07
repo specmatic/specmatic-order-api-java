@@ -21,7 +21,7 @@ class ProductService {
     lateinit var inventoryServiceClient: InventoryServiceClient
 
     fun getProduct(id: Int): ProductResponse {
-        return DB.findProduct(id)
+        return DB.findProduct(id, inventoryServiceClient)
     }
 
     fun updateProduct(id: Int, request: NewProductRequest) {
@@ -45,7 +45,7 @@ class ProductService {
     }
 
     fun findProducts(name: String?, type: ProductType?, status: String?, dateRange: DateRange?): List<ProductResponse> {
-        return DB.findProducts(name, type, status).filter {
+        return DB.findProducts(name, type, status, inventoryServiceClient).filter {
             dateRange?.contains(it.createdOn) ?: true
         }
     }
