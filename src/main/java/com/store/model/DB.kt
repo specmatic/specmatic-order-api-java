@@ -1,9 +1,6 @@
 package com.store.model
 
-import com.example.inventory.GetInventoryRequest
-import com.example.inventory.InventoryService
 import com.store.exceptions.IdempotencyConflictException
-import jakarta.xml.ws.BindingProvider
 import java.util.UUID
 
 private data class IdempotentRecord<T>(val bodyHash: String, val result: T)
@@ -54,30 +51,9 @@ object DB {
         }
     }
 
-    fun findProduct(id: Int): ProductResponse {
+    fun findProduct(id: Int): Product {
         if (id !in PRODUCTS) throw NoSuchElementException("Product Id $id does not exist")
-        val product = PRODUCTS.getValue(id)
-
-        val wsdlURL = DB.javaClass.getResource("/wsdls/inventory.wsdl")
-            ?: error("Inventory WSDL not found in resources")
-        val inventoryService = InventoryService(wsdlURL)
-
-        val inventoryServiceURL =
-            System.getenv("INVENTORY_API_URL") ?:
-            System.getProperty("INVENTORY_API_URL") ?:
-            "http://localhost:8095/ws"
-
-        val inventoryServicePort = inventoryService.inventoryServicePort.apply {
-            (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] =
-                inventoryServiceURL
-        }
-
-        val getInventoryRequest = GetInventoryRequest().also {
-            it.productid = product.id
-        }
-
-        val response = inventoryServicePort.getInventory(getInventoryRequest)
-        return ProductResponse(product, response.inventory)
+        return PRODUCTS.getValue(id)
     }
 
     fun updateProduct(id: Int, update: Product) {
@@ -90,51 +66,16 @@ object DB {
         PRODUCTS.remove(id)
     }
 
-    fun findProducts(name: String?, type: ProductType?, status: String?): List<ProductResponse> {
+    fun findProducts(
+        name: String?,
+        type: ProductType?,
+        status: String?,
+    ): List<Product> {
         val products = PRODUCTS.filter { (_, product) ->
             product.name == name || product.type == type
         }.values.toList()
 
-        println("Connecting to Inventory Service to fetch inventory details...")
-        val wsdlURL = DB.javaClass.getResource("/wsdls/inventory.wsdl")?.also {
-            println("Found inventory WSDL at $it")
-        } ?: error("Inventory WSDL not found in resources")
-        val inventoryService = InventoryService(wsdlURL)
-
-        println("Determining service endpoint...")
-        val inventoryServiceURL =
-            System.getenv("INVENTORY_API_URL") ?:
-            System.getProperty("INVENTORY_API_URL") ?:
-            "http://localhost:8095/ws"
-
-        println("Calling Inventory Service at $inventoryServiceURL")
-
-        val inventoryServicePort = inventoryService.inventoryServicePort.apply {
-            try {
-                (this as BindingProvider).requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] =
-                    inventoryServiceURL
-            } catch(e: Throwable) {
-                println(e)
-                e.printStackTrace()
-                throw e
-            }
-        }
-
-        return products.map { product ->
-            val getInventoryRequest = GetInventoryRequest().also {
-                it.productid = product.id
-            }
-
-            try {
-                val response = inventoryServicePort.getInventory(getInventoryRequest)
-
-                ProductResponse(product, response.inventory)
-            } catch(e: Throwable) {
-                println(e)
-                e.printStackTrace()
-                throw e
-            }
-        }
+        return products
     }
 
     fun addOrder(order: Order, idempotencyKey: UUID, bodyHash: String): Id {

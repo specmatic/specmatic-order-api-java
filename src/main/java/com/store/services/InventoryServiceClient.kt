@@ -1,26 +1,21 @@
 package com.store.services
 
 import com.example.inventory.*
-import com.store.model.DB
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import jakarta.xml.ws.BindingProvider
 
 @Service
 class InventoryServiceClient {
-    @Value("\${inventory-service}")
+    @Value("\${inventory.service.url}")
     private lateinit var inventoryServiceUrl: String
 
     private fun getInventoryServicePort(): InventoryServicePortType {
-        val wsdlURL = DB.javaClass.getResource("/wsdls/inventory.wsdl")
+        val wsdlURL = javaClass.getResource("/wsdls/inventory.wsdl")
             ?: error("Inventory WSDL not found in resources")
         val service = InventoryService(wsdlURL)
         val port = service.inventoryServicePort
         val bindingProvider = port as BindingProvider
-        val inventoryServiceUrl =
-            System.getenv("INVENTORY_API_URL") ?:
-            System.getProperty("INVENTORY_API_URL") ?:
-            inventoryServiceUrl
 
         bindingProvider.requestContext[BindingProvider.ENDPOINT_ADDRESS_PROPERTY] = inventoryServiceUrl
         return port
