@@ -31,14 +31,14 @@ jobs:
       - name: Setup Maven Action
         uses: s4u/setup-maven-action@v1.18.0
 
-      - name: Build with Maven
-        run: ./mvnw test package jacoco:report -Ptest
-
       - name: Save Specmatic license
         if: github.ref == 'refs/heads/main'
         run: |
           mkdir -p ~/.specmatic
           echo "${{ secrets.SPECMATIC_LICENSE_KEY }}" > ~/.specmatic/specmatic-license.txt
+
+      - name: Build with Maven
+        run: ./mvnw test package jacoco:report -Ptest
 
       - name: Run Specmatic Insights Build Reporter
         if: github.ref == 'refs/heads/main'
