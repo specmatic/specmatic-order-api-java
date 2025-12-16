@@ -24,20 +24,8 @@ public class ContractTestUsingCLITest {
         return !"true".equals(System.getenv("CI")) || System.getProperty("os.name").toLowerCase().contains("linux");
     }
 
-    private static final SpecmaticExecutor test = createTestExecutor();
-    private static final SpecmaticExecutor stub = createStubExecutor();
-
-    private static SpecmaticExecutor createStubExecutor() {
-        List<String> args = asList("virtualize", "--port=" + HTTP_STUB_PORT);
-        Map<String, String> env = Map.of("SOME_ENV", "value");
-        return new SpecmaticExecutor(args, env);
-    }
-
-    private static SpecmaticExecutor createTestExecutor() {
-        List<String> args = asList("test", "--host=" + APPLICATION_HOST, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS);
-        Map<String, String> env = Map.of("SPECMATIC_GENERATIVE_TESTS", "true");
-        return new SpecmaticExecutor(args, env);
-    }
+    private static final SpecmaticExecutor stub = createStub();
+    private static final SpecmaticExecutor test = createTest();
 
     @BeforeAll
     public static void setup() throws Exception {
@@ -50,12 +38,24 @@ public class ContractTestUsingCLITest {
     @Test
     void specmaticContractTest() throws Exception {
         test.start();
-        test.verifyNoFailures();
+        test.verifySuccessfulExecutionWithNoFailures();
     }
 
     @AfterAll
     public static void teardown() throws Exception {
         test.stop();
         stub.stop();
+    }
+
+    private static SpecmaticExecutor createStub() {
+        List<String> args = asList("virtualize", "--port=" + HTTP_STUB_PORT);
+        Map<String, String> env = Map.of("SOME_ENV", "value");
+        return new SpecmaticExecutor(args, env);
+    }
+
+    private static SpecmaticExecutor createTest() {
+        List<String> args = asList("test", "--host=" + APPLICATION_HOST, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS);
+        Map<String, String> env = Map.of("SPECMATIC_GENERATIVE_TESTS", "true", "SPECMATIC_TEST_PARALLELISM", "auto");
+        return new SpecmaticExecutor(args, env);
     }
 }

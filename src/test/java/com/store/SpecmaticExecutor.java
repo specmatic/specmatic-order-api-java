@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SpecmaticExecutor {
     private final ProcessBuilder builder;
+    private final String command;
     private Process process;
     private Thread stdOut;
     private Thread stdErr;
@@ -19,6 +20,9 @@ class SpecmaticExecutor {
     private final StringBuffer logs = new StringBuffer(8192);
 
     SpecmaticExecutor(List<String> args, Map<String, String> env) {
+        if (args.isEmpty())
+            throw new IllegalArgumentException("At least one argument is required to execute Specmatic");
+        this.command = "Specmatic " + args.get(0);
         try {
             List<String> cmd = new ArrayList<>(asList("java", "-jar", System.getProperty("user.home") + "/.specmatic/specmatic.jar"));
             cmd.addAll(args);
@@ -30,29 +34,14 @@ class SpecmaticExecutor {
     }
 
     public void start() throws Exception {
+        System.out.println("Starting " + command);
         process = builder.start();
-        this.stdOut = startStreamThread(process.getInputStream(), System.out, "STDOUT");
-        this.stdErr = startStreamThread(process.getErrorStream(), System.err, "STDERR");
-    }
-
-    private Thread startStreamThread(InputStream in, java.io.PrintStream out, String label) {
-        Thread t = new Thread(() -> {
-            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(in, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String entry = "[" + label + "] " + line + System.lineSeparator();
-                    logs.append(entry);
-                    out.println(line);
-                }
-            } catch (Exception ignored) {
-            }
-        });
-        t.setDaemon(true);
-        t.start();
-        return t;
+        this.stdOut = startStreamThread(process.getInputStream(), System.out, command + ":STDOUT");
+        this.stdErr = startStreamThread(process.getErrorStream(), System.err, command + ":STDERR");
     }
 
     public void stop() throws Exception {
+        System.out.println("Stopping " + command);
         if (process == null) return;
 
         // wait up to 10s, then forcibly destroy
@@ -73,29 +62,34 @@ class SpecmaticExecutor {
         if (stdErr != null) stdErr.join(1000);
     }
 
-    public String getLogs() {
-        if (process == null) {
-            throw new IllegalStateException("Specmatic process has not been started yet.");
-        }
-        return logs.toString();
-    }
-
-    public int exitCode() {
-        if (process == null || process.isAlive()) {
-            throw new IllegalStateException("Specmatic process has not been started or completed yet.");
-        }
-
-        return process.exitValue();
-    }
-
-    public void verifyNoFailures() throws Exception {
-        if (process != null) process.waitFor();
-        assertThat(exitCode())
-                .withFailMessage("Expected Specmatic to exit without any failures, but it exited with code %d", exitCode())
+    public void verifySuccessfulExecutionWithNoFailures() throws Exception {
+        System.out.println("Verifying " + command + " completed without failures");
+        if (process == null) throw new IllegalStateException(command + " process has not been started");
+        process.waitFor();
+        int exitCode = process.exitValue();
+        assertThat(exitCode)
+                .withFailMessage("Expected %s to exit without any failures, but it exited with code %%d".formatted(command), exitCode)
                 .isEqualTo(0);
-        boolean hasSucceeded = getLogs().contains("Failures: 0");
+        boolean hasSucceeded = logs.toString().contains("Failures: 0");
         assertThat(hasSucceeded)
-                .withFailMessage("Expected Specmatic to report 0 failures but some tests have failed")
+                .withFailMessage("Expected " + command + " to report 0 failures but some tests have failed")
                 .isTrue();
+    }
+
+    private Thread startStreamThread(InputStream in, java.io.PrintStream out, String label) {
+        Thread t = new Thread(() -> {
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(in, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String entry = "[%s] %s%s".formatted(label, line, System.lineSeparator());
+                    logs.append(entry);
+                    out.println(line);
+                }
+            } catch (Exception ignored) {
+            }
+        });
+        t.setDaemon(true);
+        t.start();
+        return t;
     }
 }

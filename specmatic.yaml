@@ -14,7 +14,3 @@ report:
           minThresholdPercentage: 65
           maxMissedEndpointsInSpec: 4
           enforce: true
-  successCriteria:
-    minThresholdPercentage: 70
-    maxMissedEndpointsInSpec: 4
-    enforce: true
