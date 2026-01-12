@@ -49,7 +49,7 @@ jobs:
           echo "${{ secrets.SPECMATIC_LICENSE_KEY }}" > ~/.specmatic/specmatic-license.txt
 
       - name: Build with Maven
-        run: ./mvnw test package jacoco:report -Ptest
+        run: ./mvnw --batch-mode test package jacoco:report -Ptest
 
       - name: Publish Build Reports to Specmatic Insights
         if: github.ref == 'refs/heads/main'
