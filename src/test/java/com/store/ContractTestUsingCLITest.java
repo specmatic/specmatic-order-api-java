@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @EnabledIf(value = "isNonCIOrLinux", disabledReason = "Run only on Linux in CI; all platforms allowed locally")
@@ -48,14 +49,12 @@ public class ContractTestUsingCLITest {
     }
 
     private static SpecmaticExecutor createStub() {
-        List<String> args = asList("virtualize", "--port=" + HTTP_STUB_PORT);
-        Map<String, String> env = Map.of("SOME_ENV", "value");
-        return new SpecmaticExecutor(args, env);
+        List<String> args = asList("virtualize");
+        return new SpecmaticExecutor(args, emptyMap());
     }
 
     private static SpecmaticExecutor createTest() {
-        List<String> args = asList("test", "--host=" + APPLICATION_HOST, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS);
-        Map<String, String> env = Map.of("SPECMATIC_GENERATIVE_TESTS", "true", "SPECMATIC_TEST_PARALLELISM", "auto");
-        return new SpecmaticExecutor(args, env);
+        List<String> args = asList("test");
+        return new SpecmaticExecutor(args, emptyMap());
     }
 }

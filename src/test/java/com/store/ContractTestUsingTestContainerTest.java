@@ -36,10 +36,8 @@ public class ContractTestUsingTestContainerTest {
 
         System.out.println("Using docker host address: " + dockerHostAddress);
         testContainer = new GenericContainer<>("specmatic/specmatic:latest")
-                .withCommand("test", "--host=" + APPLICATION_HOST, "--port=" + APPLICATION_PORT, "--filter=PATH!=" + EXCLUDED_ENDPOINTS)
+                .withCommand("test")
 //                .withImagePullPolicy(PullPolicy.alwaysPull())
-                .withEnv("SPECMATIC_GENERATIVE_TESTS", "true")
-                .withEnv("SPECMATIC_TEST_PARALLELISM", "auto")
                 .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
                 .withFileSystemBind("./build/reports/specmatic", "/usr/src/app/build/reports/specmatic", BindMode.READ_WRITE)
                 // For Docker Desktop on Windows and Mac, "host.docker.internal" is used to refer to the host machine.
@@ -53,8 +51,7 @@ public class ContractTestUsingTestContainerTest {
         stubContainer = new GenericContainer<>("specmatic/specmatic")
 //                .withImagePullPolicy(PullPolicy.alwaysPull())
                 .withCommand(
-                        "virtualize",
-                        "--port=" + HTTP_STUB_PORT
+                        "virtualize"
                 )
                 .withCreateContainerCmdModifier(cmd -> {
                     if (cmd.getHostConfig() != null) {

@@ -5,34 +5,21 @@ import io.specmatic.stub.ContractStub;
 import io.specmatic.test.SpecmaticContractTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import static io.specmatic.stub.API.createStub;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ContractTest implements SpecmaticContractTest {
-    private static ConfigurableApplicationContext context;
-    private static final String EXCLUDED_ENDPOINTS = "'/internal/metrics'";
     private static ContractStub stub = null;
-
     @BeforeAll
-    public static void setUp() {
-        System.setProperty("host", "localhost");
-        System.setProperty("port", "8090");
-        System.setProperty("SPECMATIC_GENERATIVE_TESTS", "true");
-        System.setProperty("SPECMATIC_TEST_PARALLELISM", "auto");
-        System.setProperty("filter", String.format("PATH!=%s", EXCLUDED_ENDPOINTS));
-        System.setProperty("INVENTORY_API_URL", "http://localhost:9000/ws");
-        System.out.println("Running contract tests using Specmatic against application at localhost:8080");
-
+    public static void setup() throws Exception {
         DB.INSTANCE.resetDB();
-
         stub = createStub("localhost", 9000);
-
-        context = SpringApplication.run(Application.class);
     }
 
     @AfterAll
@@ -40,7 +27,5 @@ public class ContractTest implements SpecmaticContractTest {
         if(stub != null) {
             stub.close();
         }
-
-        context.close();
     }
 }

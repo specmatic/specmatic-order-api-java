@@ -3,9 +3,12 @@ contracts:
   - git:
       url: https://github.com/specmatic/specmatic-order-contracts.git
     provides:
-      - io/specmatic/examples/store/openapi/api_order_v5.yaml
+      - specs:
+          - io/specmatic/examples/store/openapi/api_order_v5.yaml
+        baseUrl: http://localhost:8090
   - consumes:
-      - wsdls/inventory.wsdl
+    - wsdls/inventory.wsdl
+
 report:
   types:
     APICoverage:
@@ -14,3 +17,7 @@ report:
           minThresholdPercentage: 65
           maxMissedEndpointsInSpec: 4
           enforce: true
+test:
+  resiliencyTests:
+    enable: all
+  filter: "PATH!='/internal/metrics'"
