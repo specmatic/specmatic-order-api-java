@@ -9,24 +9,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import static io.specmatic.stub.API.createStub;
 
 public class ContractTest implements SpecmaticContractTest {
     private static ConfigurableApplicationContext context;
-    private static final String EXCLUDED_ENDPOINTS = "'/internal/metrics'";
     private static ContractStub stub = null;
 
     @BeforeAll
     public static void setUp() {
-        System.setProperty("host", "localhost");
-        System.setProperty("port", "8090");
-        System.setProperty("SPECMATIC_GENERATIVE_TESTS", "true");
-        System.setProperty("SPECMATIC_TEST_PARALLELISM", "auto");
-        System.setProperty("filter", String.format("PATH!=%s", EXCLUDED_ENDPOINTS));
-        System.setProperty("INVENTORY_API_URL", "http://localhost:9000/ws");
-        System.out.println("Running contract tests using Specmatic against application at localhost:8080");
+        System.out.println("Running contract tests using Specmatic against application at localhost:8090");
 
         DB.INSTANCE.resetDB();
 

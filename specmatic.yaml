@@ -1,16 +1,55 @@
-version: 2
-contracts:
-  - git:
-      url: https://github.com/specmatic/specmatic-order-contracts.git
-    provides:
-      - io/specmatic/examples/store/openapi/api_order_v5.yaml
-  - consumes:
-      - wsdls/inventory.wsdl
-report:
-  types:
-    APICoverage:
-      OpenAPI:
-        successCriteria:
-          minThresholdPercentage: 65
-          maxMissedEndpointsInSpec: 4
-          enforce: true
+version: 3
+systemUnderTest:
+  service:
+    $ref: "#/components/services/orderApiService"
+    runOptions:
+      $ref: "#/components/runOptions/orderApiServiceTest"
+dependencies:
+  services:
+    - service:
+        $ref: "#/components/services/inventoryService"
+        runOptions:
+          $ref: "#/components/runOptions/inventoryServiceMock"
+components:
+  sources:
+    specmaticOrderContracts:
+      git:
+        url: https://github.com/specmatic/specmatic-order-contracts.git
+    localFilesystem:
+      filesystem:
+        directory: "."
+  services:
+    orderApiService:
+      definitions:
+        - definition:
+            source:
+              $ref: "#/components/sources/specmaticOrderContracts"
+            specs:
+              - io/specmatic/examples/store/openapi/api_order_v5.yaml
+      settings:
+        resiliencyTests: all
+    inventoryService:
+      definitions:
+        - definition:
+            source:
+              $ref: "#/components/sources/localFilesystem"
+            specs:
+              - wsdls/inventory.wsdl
+  runOptions:
+    orderApiServiceTest:
+      openapi:
+        type: test
+        host: localhost
+        port: 8090
+        filter: "PATH!='/internal/metrics'"
+    inventoryServiceMock:
+      wsdl:
+        type: mock
+        host: localhost
+        port: 9000
+specmatic:
+  governance:
+    successCriteria:
+      minCoveragePercentage: 65
+      maxMissedOperationsInSpec: 4
+      enforce: true
