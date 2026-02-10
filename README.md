@@ -22,7 +22,7 @@ The interaction between Order API in this project and it's consumers is governed
 3. Docker Desktop (for running contract tests with containers)
 
 ## Run Contract Tests
-Specmatic contract tests use the [specmatic.yaml](specmatic.yaml) configuration file to start the required Specmatic stub before verifying the Order API.
+Specmatic contract tests use the [specmatic.yaml](specmatic.yaml) configuration file to start the required specmatic mock before verifying the Order API.
 
 ### 1. Using Maven
 

@@ -42,7 +42,7 @@ public class ContractTestUsingCLITest {
     }
 
     private static SpecmaticExecutor createStub() {
-        List<String> args = asList("virtualize");
+        List<String> args = asList("mock");
         Map<String, String> env = Map.of();
         return new SpecmaticExecutor(args, env);
     }
