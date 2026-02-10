@@ -36,7 +36,7 @@ public class ContractTestUsingTestContainerTest {
 
 
         stubContainer = new GenericContainer<>("specmatic/specmatic")
-                .withCommand("virtualize")
+                .withCommand("mock")
                 .withFileSystemBind(
                         "./wsdls",
                         "/usr/src/app/wsdls",
