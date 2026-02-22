@@ -112,14 +112,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ github.repository }}
+          images: specmaticdemo/${{ github.event.repository.name }}
 
       - name: Build and push Docker image (multi-platform)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ github.repository }}:latest
+            specmaticdemo/${{ github.event.repository.name }}:latest
           labels: ${{ steps.meta.outputs.labels }}
