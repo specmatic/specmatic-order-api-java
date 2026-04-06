@@ -79,3 +79,4 @@ docker run --rm --network host -v "%cd%/specmatic.yaml:/usr/src/app/specmatic.ya
 * [Specmatic Website](https://specmatic.io)
 * [Specmatic Documentation](https://docs.specmatic.io)
 
+
