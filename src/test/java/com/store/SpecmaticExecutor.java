@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 class SpecmaticExecutor {
     private final ProcessBuilder builder;
     private final String command;
