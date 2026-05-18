@@ -2,6 +2,7 @@ package com.store;
 
 import com.store.model.DB;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -56,6 +57,12 @@ public class ContractTestUsingTestContainerTest {
     public static void setup() {
         System.out.println("Running contract tests using Specmatic Test Container against application at localhost:" + APPLICATION_PORT);
         DB.INSTANCE.resetDB();
+    }
+
+    @AfterAll
+    public static void cleanUp(){
+        stubContainer.stop();
+        testContainer.stop();
     }
 
     @Test
