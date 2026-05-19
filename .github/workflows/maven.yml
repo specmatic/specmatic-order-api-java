@@ -1,13 +1,26 @@
-# This workflow will build a Java project with Maven
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+name: Run tests
 
-name: Java CI with Maven
+run-name: ${{ inputs.orchestrator_run_suffix && format('Run tests - {0}', inputs.orchestrator_run_suffix) || github.workflow }}
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      enterprise_version:
+        description: Specmatic enterprise version under test
+        required: false
+        type: string
+      enterprise_artifact_url:
+        description: Specmatic enterprise jar/artifact URL under test
+        required: false
+        type: string
+      orchestrator_run_suffix:
+        description: Test Orchestrator run suffix
+        required: false
+        type: string
   repository_dispatch:
     types: contracts changed
 jobs:
@@ -17,8 +30,17 @@ jobs:
         os: [ ubuntu-latest ]
         java: [ 17 ]
     runs-on: ${{ matrix.os }}
+    env:
+      ENTERPRISE_VERSION: ${{ inputs.enterprise_version }}
+      ENTERPRISE_ARTIFACT_URL: ${{ inputs.enterprise_artifact_url }}
     steps:
       - uses: actions/checkout@v6
+
+      - name: Add orchestrator context to summary
+        if: ${{ inputs.orchestrator_run_suffix != '' }}
+        run: |
+          echo "### Orchestrator" >> "$GITHUB_STEP_SUMMARY"
+          echo "Run: ${{ inputs.orchestrator_run_suffix }}" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v5
@@ -33,17 +55,24 @@ jobs:
           checkout-enabled: false
 
       - name: Download Specmatic CLI
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p ~/.specmatic
-          if [ ! -f ~/.specmatic/specmatic.jar ]; then
+
+          if [ -n "${ENTERPRISE_ARTIFACT_URL:-}" ]; then
+            echo "Downloading Specmatic Enterprise artifact"
+            echo "${ENTERPRISE_ARTIFACT_URL}"
+            curl -L --fail --retry 5 --retry-delay 15 \
+              "${ENTERPRISE_ARTIFACT_URL}" \
+              -o ~/.specmatic/specmatic.jar
+          else
             echo "Downloading latest specmatic.jar from GitHub releases"
             curl -L -f -o ~/.specmatic/specmatic.jar https://github.com/specmatic/specmatic/releases/latest/download/specmatic.jar
-          else
-            echo "specmatic.jar already exists, skipping download"
           fi
 
       - name: Save Specmatic license
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.ref == 'refs/heads/main' || inputs.enterprise_artifact_url != '' }}
         run: |
           mkdir -p ~/.specmatic
           echo "${{ secrets.SPECMATIC_LICENSE_KEY }}" > ~/.specmatic/specmatic-license.txt
@@ -52,7 +81,7 @@ jobs:
         run: ./mvnw --no-transfer-progress test package jacoco:report -Ptest
 
       - name: Publish Build Reports to Specmatic Insights
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.ref == 'refs/heads/main' && inputs.orchestrator_run_suffix == '' }}
         run: |
           docker run \
             -v ${{ github.workspace }}:/usr/src/app \
@@ -85,7 +114,7 @@ jobs:
           path: target/*.jar
 
   docker:
-    if: github.ref == 'refs/heads/main'
+    if: ${{ github.ref == 'refs/heads/main' && inputs.orchestrator_run_suffix == '' }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
