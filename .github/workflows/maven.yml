@@ -107,6 +107,14 @@ jobs:
           name: ${{ matrix.os }}-${{ matrix.java }}-html-report
           path: build/reports/specmatic/html
 
+      - name: Upload CTRF Test Report
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ctrf-report
+          path: build/reports/specmatic/test/ctrf/*.json
+          retention-days: 5
+
       - name: Upload target jar for Docker
         uses: actions/upload-artifact@v6
         with:
