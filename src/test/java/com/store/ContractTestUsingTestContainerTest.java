@@ -59,17 +59,6 @@ public class ContractTestUsingTestContainerTest {
         DB.INSTANCE.resetDB();
     }
 
-    @AfterAll
-    public static void teardown() {
-        if (testContainer.isRunning()) {
-            testContainer.stop();
-        }
-
-        if (stubContainer.isRunning()) {
-            stubContainer.stop();
-        }
-    }
-
     @Test
     void specmaticContractTest() {
         stubContainer.start();
