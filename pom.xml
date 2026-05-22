@@ -13,7 +13,7 @@
         <maven.compiler>17</maven.compiler>
         <specmatic.version>2.46.1</specmatic.version>
         <spring.boot.version>3.5.14</spring.boot.version>
-        <cxf.version>4.2.0</cxf.version>
+        <cxf.version>4.2.1</cxf.version>
     </properties>
 
     <dependencies>
