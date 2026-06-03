@@ -36,7 +36,7 @@ For **Windows Command Prompt**:
 mvnw.cmd test -Dtest=ContractTest
 ```
 
-After the tests complete, view the report at [build/reports/specmatic/html/index.html](build/reports/specmatic/html/index.html).
+After the tests complete, view the report at [build/reports/specmatic/test/html/index.html](build/reports/specmatic/test/html/index.html).
 
 #### Contract Tests Using TestContainers
 

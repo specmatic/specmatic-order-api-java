@@ -105,7 +105,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.os }}-${{ matrix.java }}-html-report
-          path: build/reports/specmatic/html
+          path: build/reports/specmatic/test/html
 
       - name: Upload CTRF Test Report
         uses: actions/upload-artifact@v6
