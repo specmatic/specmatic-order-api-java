@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <kotlin.version>2.3.21</kotlin.version>
+        <kotlin.version>2.4.0</kotlin.version>
         <maven.compiler>17</maven.compiler>
         <specmatic.version>2.46.3</specmatic.version>
         <spring.boot.version>3.5.14</spring.boot.version>
