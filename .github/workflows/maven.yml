@@ -61,11 +61,36 @@ jobs:
           mkdir -p ~/.specmatic
 
           if [ -n "${ENTERPRISE_ARTIFACT_URL:-}" ]; then
+            url="${ENTERPRISE_ARTIFACT_URL}"
+            output_path="$HOME/.specmatic/specmatic.jar"
+            max_attempts=10
+
             echo "Downloading Specmatic Enterprise artifact"
-            echo "${ENTERPRISE_ARTIFACT_URL}"
-            curl -L --fail --retry 10 --retry-delay 30 \
-              "${ENTERPRISE_ARTIFACT_URL}" \
-              -o ~/.specmatic/specmatic.jar
+            echo "$url"
+
+            initial_sleep=$(( RANDOM % 181 ))
+            echo "Initial jitter: ${initial_sleep}s"
+            sleep "$initial_sleep"
+
+            for attempt in $(seq 1 "$max_attempts"); do
+              echo "Download attempt ${attempt}/${max_attempts}"
+
+              if curl --http1.1 -L --fail --continue-at - "$url" -o "$output_path"; then
+                echo "Enterprise artifact downloaded successfully"
+                break
+              fi
+
+              if [ "$attempt" -eq "$max_attempts" ]; then
+                echo "Download failed after ${max_attempts} attempts"
+                exit 1
+              fi
+
+              backoff=$(( 30 * attempt ))
+              jitter=$(( RANDOM % 31 ))
+              sleep_for=$(( backoff + jitter ))
+              echo "Attempt ${attempt} failed. Sleeping ${sleep_for}s before retry"
+              sleep "$sleep_for"
+            done
           else
             echo "Downloading latest specmatic.jar from GitHub releases"
             curl -L -f -o ~/.specmatic/specmatic.jar https://github.com/specmatic/specmatic/releases/latest/download/specmatic.jar
