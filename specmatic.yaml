@@ -15,6 +15,7 @@ components:
     specmaticOrderContracts:
       git:
         url: https://github.com/specmatic/specmatic-order-contracts.git
+        branch: missing-response-codes
     localFilesystem:
       filesystem:
         directory: "."
