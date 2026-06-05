@@ -63,7 +63,7 @@ jobs:
           if [ -n "${ENTERPRISE_ARTIFACT_URL:-}" ]; then
             echo "Downloading Specmatic Enterprise artifact"
             echo "${ENTERPRISE_ARTIFACT_URL}"
-            curl -L --fail --retry 5 --retry-delay 15 \
+            curl -L --fail --retry 10 --retry-delay 30 \
               "${ENTERPRISE_ARTIFACT_URL}" \
               -o ~/.specmatic/specmatic.jar
           else
