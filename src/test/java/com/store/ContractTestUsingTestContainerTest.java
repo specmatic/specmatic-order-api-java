@@ -23,11 +23,19 @@ public class ContractTestUsingTestContainerTest {
         return !"true".equals(System.getenv("CI")) || System.getProperty("os.name").toLowerCase().contains("linux");
     }
 
+    private static String enterpriseImage(){
+        if(!System.getenv("ENTERPRISE_ARTIFACT_URL").isEmpty()){
+            return "specmatic/enterprise:snapshot";
+        }else{
+            return "specmatic/specmatic:latest";
+        }
+    }
+
     private static final GenericContainer<?> testContainer;
     private static final GenericContainer<?> stubContainer;
 
     static {
-        testContainer = new GenericContainer<>("specmatic/specmatic:latest")
+        testContainer = new GenericContainer<>(enterpriseImage())
                 .withCommand("test")
                 .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
                 .withFileSystemBind("./build/reports/specmatic", "/usr/src/app/build/reports/specmatic", BindMode.READ_WRITE)
@@ -36,7 +44,7 @@ public class ContractTestUsingTestContainerTest {
                 .withLogConsumer((OutputFrame output) -> System.out.print(output.getUtf8String()));
 
 
-        stubContainer = new GenericContainer<>("specmatic/specmatic")
+        stubContainer = new GenericContainer<>(enterpriseImage())
                 .withCommand("mock")
                 .withFileSystemBind(
                         "./wsdls",
