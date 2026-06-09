@@ -24,11 +24,12 @@ public class ContractTestUsingTestContainerTest {
     }
 
     private static String enterpriseImage(){
-        if(!System.getenv("ENTERPRISE_ARTIFACT_URL").isEmpty()){
-            return "specmatic/enterprise:snapshot";
-        }else{
-            return "specmatic/specmatic:latest";
-        }
+        return "specmatic/specmatic:latest";
+        // if(!System.getenv("ENTERPRISE_ARTIFACT_URL").isEmpty()){
+        //     return "specmatic/enterprise:snapshot";
+        // }else{
+        //     return "specmatic/specmatic:latest";
+        // }
     }
 
     private static final GenericContainer<?> testContainer;
