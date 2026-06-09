@@ -85,7 +85,7 @@ jobs:
           echo "${{ secrets.SPECMATIC_LICENSE_KEY }}" > ~/.specmatic/specmatic-license.txt
 
       - name: Docker Login for snapshot image
-        if: ${{ matrix.name == 'docker' && inputs.enterprise_artifact_url != '' && github.ref == 'refs/heads/main' }}
+        if: ${{ inputs.enterprise_artifact_url != '' && github.ref == 'refs/heads/main' }}
         run: echo ${{ secrets.SPECMATIC_DOCKER_HUB_TOKEN }} | docker login -u ${{ vars.SPECMATIC_DOCKER_HUB_USERNAME }} --password-stdin
 
       - name: Build with Maven
