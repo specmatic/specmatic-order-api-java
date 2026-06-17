@@ -36,12 +36,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Add orchestrator context to summary
-        if: ${{ inputs.orchestrator_run_suffix != '' }}
-        run: |
-          echo "### Orchestrator" >> "$GITHUB_STEP_SUMMARY"
-          echo "Run: ${{ inputs.orchestrator_run_suffix }}" >> "$GITHUB_STEP_SUMMARY"
-
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v5
         with:
@@ -53,6 +47,15 @@ jobs:
         uses: s4u/setup-maven-action@v1.19.0
         with:
           checkout-enabled: false
+
+      # Internal setup required by Specmatic. Sample project users can ignore this block.
+      - if: ${{ inputs.orchestrator_run_suffix != '' }}
+        uses: specmatic/specmatic-github-workflows/action-orchestrator-setup@main
+        with:
+          orchestrator-run-suffix: ${{ inputs.orchestrator_run_suffix }}
+          docker-hub-username: ${{ vars.SPECMATIC_DOCKER_HUB_USERNAME }}
+          docker-hub-token: ${{ secrets.SPECMATIC_DOCKER_HUB_TOKEN }}
+      # End: internal setup required by Specmatic.
 
       - name: Download Specmatic CLI
         shell: bash
@@ -83,10 +86,6 @@ jobs:
         run: |
           mkdir -p ~/.specmatic
           echo "${{ secrets.SPECMATIC_LICENSE_KEY }}" > ~/.specmatic/specmatic-license.txt
-
-      - name: Docker Login for snapshot image
-        if: ${{ inputs.enterprise_artifact_url != '' && github.ref == 'refs/heads/main' }}
-        run: echo ${{ secrets.SPECMATIC_DOCKER_HUB_TOKEN }} | docker login -u ${{ vars.SPECMATIC_DOCKER_HUB_USERNAME }} --password-stdin
 
       - name: Build with Maven
         run: ./mvnw --no-transfer-progress test package jacoco:report -Ptest
