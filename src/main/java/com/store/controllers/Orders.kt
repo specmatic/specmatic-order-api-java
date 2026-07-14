@@ -6,6 +6,7 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.validation.annotation.Validated
@@ -18,7 +19,7 @@ class Orders {
     @Autowired
     lateinit var orderService: OrderService
 
-    @PostMapping("/orders")
+    @PostMapping("/orders", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun create(
         @Valid @RequestBody request: NewOrderRequest,
         @NotNull @RequestHeader("Idempotency-Key", required = true) idempotencyKey: UUID,
@@ -39,7 +40,7 @@ class Orders {
         return ResponseEntity(HttpStatus.OK)
     }
 
-    @PatchMapping("/orders/{id}")
+    @PatchMapping("/orders/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun update(
         @PathVariable("id") id: Int,
         @Valid @RequestBody request: UpdateOrderRequest,

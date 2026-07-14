@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Positive
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.validation.annotation.Validated
@@ -22,7 +23,7 @@ open class Products {
     @Autowired
     lateinit var productService: ProductService
 
-    @PatchMapping("/products/{id}")
+    @PatchMapping("/products/{id}", consumes = [MediaType.APPLICATION_JSON_VALUE])
     @Validated
     fun update(
         @PathVariable("id") id: Int,
@@ -38,7 +39,7 @@ open class Products {
         return productService.getProduct(id)
     }
 
-    @PostMapping("/products")
+    @PostMapping("/products", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun create(
         @Valid @RequestBody request: NewProductRequest,
         @NotNull @RequestHeader("Idempotency-Key", required = true) idempotencyKey: UUID,
@@ -72,7 +73,7 @@ open class Products {
         return ResponseEntity(products.take(pageSize ?: products.size), HttpStatus.OK)
     }
 
-    @PutMapping("/products/{id}/image", consumes = ["multipart/form-data"])
+    @PutMapping("/products/{id}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(@PathVariable("id") id: Int, @RequestPart("image") image: MultipartFile): ResponseEntity<Map<String, Any>> {
         productService.addImage(id, image.originalFilename, image.bytes)
         val response = mapOf("message" to "Product image updated successfully")
