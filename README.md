@@ -20,6 +20,7 @@ The interaction between Order API in this project and it's consumers is governed
 1. Spring Boot service written in Java
 2. Specmatic
 3. Docker Desktop (for running contract tests with containers)
+4. openjdk version 17.0.17
 
 ## Run Contract Tests
 Specmatic contract tests use the [specmatic.yaml](specmatic.yaml) configuration file to start the required specmatic mock before verifying the Order API.
@@ -39,6 +40,8 @@ mvnw.cmd test -Dtest=ContractTest
 After the tests complete, view the report at [build/reports/specmatic/test/html/index.html](build/reports/specmatic/test/html/index.html).
 
 #### Contract Tests Using TestContainers
+ 
+1. Start docker locally
 
 For **Unix based systems** and **Windows PowerShell**:
 ```shell
@@ -63,7 +66,15 @@ For **Unix based systems** and **Windows PowerShell**:
 # Run the contract tests
 docker run --rm --network host -v "$(pwd)/specmatic.yaml:/usr/src/app/specmatic.yaml" -v "$(pwd)/build/reports/specmatic:/usr/src/app/build/reports/specmatic" specmatic/specmatic test --port=8090
 ```
-
+For mac user 
+```shell
+docker run --rm \
+  -v "$(pwd)/specmatic.yaml:/usr/src/app/specmatic.yaml" \
+  -v "$(pwd)/build/reports/specmatic:/usr/src/app/build/reports/specmatic" \
+  specmatic/specmatic test \
+  --host=host.docker.internal \
+  --port=8090
+```
 For **Windows Command Prompt**:
 ```shell
 # Start the service
