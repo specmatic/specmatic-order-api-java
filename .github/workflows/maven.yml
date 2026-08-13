@@ -78,7 +78,7 @@ jobs:
             echo "Enterprise artifact downloaded successfully"
           else
             echo "Downloading latest specmatic.jar from GitHub releases"
-            curl -L -f -o ~/.specmatic/specmatic.jar https://github.com/specmatic/specmatic/releases/latest/download/specmatic.jar
+            curl https://docs.specmatic.io/install-specmatic.sh | bash
           fi
 
       - name: Save Specmatic license
