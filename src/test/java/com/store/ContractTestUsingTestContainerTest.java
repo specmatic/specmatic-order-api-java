@@ -2,6 +2,7 @@ package com.store;
 
 import com.store.model.DB;
 import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,12 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 @Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -33,6 +40,8 @@ public class ContractTestUsingTestContainerTest {
     static {
         testContainer = new GenericContainer<>(enterpriseImage())
                 .withCommand("test")
+                .withFileSystemBind(System.getProperty("user.home") + "/.specmatic", "/root/.specmatic", BindMode.READ_ONLY)
+                .withEnv("SPECMATIC_LICENSE_PATH", "/root/.specmatic/specmatic-license.txt")
                 .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
                 .withFileSystemBind("./build/reports/specmatic", "/usr/src/app/build/reports/specmatic", BindMode.READ_WRITE)
                 .withNetworkMode("host")
@@ -42,6 +51,8 @@ public class ContractTestUsingTestContainerTest {
 
         stubContainer = new GenericContainer<>(enterpriseImage())
                 .withCommand("mock")
+                .withFileSystemBind(System.getProperty("user.home") + "/.specmatic", "/root/.specmatic", BindMode.READ_ONLY)
+                .withEnv("SPECMATIC_LICENSE_PATH", "/root/.specmatic/specmatic-license.txt")
                 .withFileSystemBind(
                         "./wsdls",
                         "/usr/src/app/wsdls",
@@ -70,7 +81,13 @@ public class ContractTestUsingTestContainerTest {
     }
 
     @Test
-    void specmaticContractTest() {
+    void specmaticContractTest() throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+        Awaitility.await().atMost(Duration.ofSeconds(30)).untilAsserted(() -> {
+            HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + APPLICATION_PORT + "/actuator/health")).GET().build();
+            HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+            Assertions.assertThat(response.statusCode()).isEqualTo(200);
+        });
         stubContainer.start();
         testContainer.start();
         boolean hasSucceeded = testContainer.getLogs().contains("Failures: 0");

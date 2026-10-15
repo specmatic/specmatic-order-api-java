@@ -23,6 +23,7 @@ open class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
             .addFilter(filter)
             .authorizeRequests()
+            .requestMatchers("/actuator/health").permitAll()
             .anyRequest()
             .authenticated()
         return http.build()
