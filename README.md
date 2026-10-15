@@ -21,6 +21,8 @@ The interaction between Order API in this project and it's consumers is governed
 2. Specmatic
 3. Docker Desktop (for running contract tests with containers)
 
+The service exposes its Actuator health endpoint at `/actuator/health` for readiness checks.
+
 ## Run Contract Tests
 Specmatic contract tests use the [specmatic.yaml](specmatic.yaml) configuration file to start the required specmatic mock before verifying the Order API.
 
@@ -78,5 +80,4 @@ docker run --rm --network host -v "%cd%/specmatic.yaml:/usr/src/app/specmatic.ya
 ## For More Info
 * [Specmatic Website](https://specmatic.io)
 * [Specmatic Documentation](https://docs.specmatic.io)
-
 
