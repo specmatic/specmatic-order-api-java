@@ -41,7 +41,6 @@ public class ContractTestUsingTestContainerTest {
         testContainer = new GenericContainer<>(enterpriseImage())
                 .withCommand("test")
                 .withFileSystemBind(System.getProperty("user.home") + "/.specmatic", "/root/.specmatic", BindMode.READ_ONLY)
-                .withEnv("SPECMATIC_LICENSE_PATH", "/root/.specmatic/specmatic-license.txt")
                 .withFileSystemBind("./specmatic.yaml", "/usr/src/app/specmatic.yaml", BindMode.READ_ONLY)
                 .withFileSystemBind("./build/reports/specmatic", "/usr/src/app/build/reports/specmatic", BindMode.READ_WRITE)
                 .withNetworkMode("host")
@@ -52,7 +51,6 @@ public class ContractTestUsingTestContainerTest {
         stubContainer = new GenericContainer<>(enterpriseImage())
                 .withCommand("mock")
                 .withFileSystemBind(System.getProperty("user.home") + "/.specmatic", "/root/.specmatic", BindMode.READ_ONLY)
-                .withEnv("SPECMATIC_LICENSE_PATH", "/root/.specmatic/specmatic-license.txt")
                 .withFileSystemBind(
                         "./wsdls",
                         "/usr/src/app/wsdls",
